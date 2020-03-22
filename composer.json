@@ -1,0 +1,34 @@
+{
+    "name": "itcig/caliban",
+    "description": "Utility for reading and writing client session data",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Brad",
+            "email": "bash@capinfogroup.com"
+        }
+    ],
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../php-helpers",
+			"options": {
+				"symlink": true
+			}
+		}
+	],
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+    "require": {
+	    "php": "^7.1",
+	    "itcig/php-helpers": "*",
+        "predis/predis": "^1.1",
+	    "oscarotero/env": "^1.1",
+        "vlucas/phpdotenv": "^4.1"
+    },
+	"autoload": {
+		"psr-4": {
+			"Caliban\\": "src/"
+		}
+	}
+}
