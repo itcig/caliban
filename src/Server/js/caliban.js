@@ -1666,25 +1666,11 @@ if (typeof window.Caliban !== 'object') {
 					charSet = null;
 				}
 
-				referralUrl = getReferrer();
-
 				if (!sessionReferenceId) {
 					// Session Id cookie was not found: we consider this the start of a 'session'
 					sessionReferenceId = generateRandomUuid();
 
 					newSession = true;
-
-					// Store the referrer URL and time in session
-					// referral URL depends on the first or last referrer attribution
-					currentReferrerHostName = getHostName(configReferrerUrl);
-					originalReferrerHostName = referralUrl.length ? getHostName(referralUrl) : '';
-
-					if (currentReferrerHostName.length && // there is a referrer
-						!isCurrentHostName(currentReferrerHostName) && // domain is not the current domain
-						(!originalReferrerHostName.length || // previously empty
-							isCurrentHostName(originalReferrerHostName))) { // previously set but in current domain
-						referralUrl = configReferrerUrl;
-					}
 				}
 
 				// build out the rest of the request
@@ -1699,7 +1685,6 @@ if (typeof window.Caliban !== 'object') {
 					((configAppendParams && configAppendParams.length) ? '&apnd=' + encodeWrapper(configAppendParams) : '') +
 					'&ces=' + Math.floor(configSessionTimeout / 1000) +
 					'&cdid=' + makeCrossDomainDeviceId() +
-					(String(referralUrl).length ? '&_ref=' + encodeWrapper(purify(referralUrl.slice(0, referralUrlMaxLength))) : '') +
 					(charSet ? '&cs=' + encodeWrapper(charSet) : '') +
 					'&snew=' + newSession +
 					'&send_image=0';
