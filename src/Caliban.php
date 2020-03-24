@@ -16,8 +16,6 @@ use \Caliban\Components\Storage\Redis;
 use \Caliban\Client\Client;
 use \Caliban\Server\Server;
 
-require_once (__DIR__ . '/../vendor/autoload.php');
-
 require_once(__DIR__ . '/config.php');
 
 class Caliban extends Singleton {
