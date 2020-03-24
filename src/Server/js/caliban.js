@@ -340,10 +340,9 @@ if (typeof window.Caliban !== 'object') {
 
 			var baseUrl = url.substr(0, hashPos);
 			var urlHash = url.substr(hashPos, urlLength - hashPos);
-
 			if (baseUrl.indexOf('?') === -1) {
 				baseUrl += '?';
-			} else if (!baseUrl.charAt(baseUrl.length - 1) === '?') {
+			} else if (baseUrl.charAt(baseUrl.length - 1) !== '?') {
 				baseUrl += '&';
 			}
 			// nothing to if ends with ?
@@ -1068,6 +1067,9 @@ if (typeof window.Caliban !== 'object') {
 				// Session UUID
 				sessionReferenceId = '',
 
+				// Used to pass external data into tracker for modifying DOM and events
+				sessionData = null,
+
 				// Override document URL
 				configCustomUrl,
 
@@ -1354,12 +1356,48 @@ if (typeof window.Caliban !== 'object') {
 			}
 
 			/*
+             * Send script request to Caliban server using GET.
+             * The response is a script that is loaded by the server
+             */
+			function getJs(request, callback) {
+
+				// Change request to use JS response type
+				request = addUrlParameter(request, "send_js", 1);
+
+				var script = documentAlias.createElement('script'),
+					scriptTags = documentAlias.getElementsByTagName('script')[0];
+
+				script.type = 'text/javascript';
+				script.async = true;
+				script.defer = true;
+
+				script.onload = function () {
+					iterator = 0; // To avoid JSLint warning of empty block
+					if (typeof callback === 'function') {
+						callback({request: request, trackerUrl: configTrackerUrl, success: true});
+					}
+				};
+				script.onerror = function () {
+					if (typeof callback === 'function') {
+						callback({request: request, trackerUrl: configTrackerUrl, success: false});
+					}
+				};
+
+				script.src = request;
+
+				scriptTags.parentNode.insertBefore(script, scriptTags);
+			}
+
+			/*
              * Send image request to Caliban server using GET.
              * The infamous web bug (or beacon) is a transparent, single pixel (1x1) image
              */
 			function getImage(request, callback) {
 				// make sure to actually load an image so callback gets invoked
-				request = request.replace("send_image=0", "send_image=1");
+				// request = request.replace("send_image=0", "send_image=1");
+
+				// Change request to use image response type
+				request = addUrlParameter(request, "send_image", 1);
 
 				var image = new Image(1, 1);
 				image.onload = function () {
@@ -1381,7 +1419,14 @@ if (typeof window.Caliban !== 'object') {
              */
 			function sendRequest(request, delay, callback) {
 				if (!configDoNotTrack && request) {
-					getImage(request, callback);
+
+					// Build full request
+					request = configTrackerUrl + (configTrackerUrl.indexOf('?') < 0 ? '?' : '&') + request;
+
+					getJs(request, callback);
+
+					// TODO: No longer used but possibly add a config option
+					// getImage(request, callback);
 				}
 			}
 
@@ -1686,8 +1731,7 @@ if (typeof window.Caliban !== 'object') {
 					'&ces=' + Math.floor(configSessionTimeout / 1000) +
 					'&cdid=' + makeCrossDomainDeviceId() +
 					(charSet ? '&cs=' + encodeWrapper(charSet) : '') +
-					'&snew=' + newSession +
-					'&send_image=0';
+					'&snew=' + newSession;
 
 				// update cookie
 				setSessionCookie(sessionReferenceId);
@@ -1790,9 +1834,9 @@ if (typeof window.Caliban !== 'object') {
 				element.setAttribute('href', link);
 			}
 
-			function addFormAppendParams(element)
+			function addFormParams(element)
 			{
-				if (!element || !configAppendParams) {
+				if (!element || !sessionData) {
 					return;
 				}
 
@@ -1800,14 +1844,10 @@ if (typeof window.Caliban !== 'object') {
 					return;
 				}
 
-				var currentUrl = configCustomUrl || locationHrefAlias;
-
-				var index, appendParam;
-
-				for (index = 0; index < configAppendParams.length; index++) {
-					appendParam = configAppendParams[index];
-
-					query.addHiddenElement(element, appendParam, getUrlParameter(currentUrl, appendParam));
+				for (var sessionParam in sessionData) {
+					if (sessionData.hasOwnProperty(sessionParam)) {
+						query.addHiddenElement(element, sessionParam, sessionData[sessionParam]);
+					}
 				}
 
 				// Add session reference Id to form as well
@@ -2045,10 +2085,8 @@ if (typeof window.Caliban !== 'object') {
 
 					var target = getTargetElementFromEvent(event);
 
-					console.log('submitting', target, event);
-
 					if (event.type === 'submit') {
-						addFormAppendParams(target);
+						addFormParams(target);
 					}
 				};
 			}
@@ -2091,37 +2129,6 @@ if (typeof window.Caliban !== 'object') {
 					}
 				}
 			}
-
-			// function addFormData(enable, trackerInstance) {
-			// 	linkTrackingInstalled = true;
-			//
-			// 	// iterate through anchor elements with href and AREA elements
-			// 	var i,
-			// 		ignorePattern = getClassesRegExp(configIgnoreClasses, 'ignore'),
-			// 		formElements = documentAlias.forms,
-			// 		formElement = null, trackerType = null;
-			//
-			// 	if (formElements) {
-			// 		for (i = 0; i < formElements.length; i++) {
-			// 			formElement = formElements[i];
-			// 			if (!ignorePattern.test(formElement.className)) {
-			// 				trackerType = typeof formElement.calibanTrackers;
-			//
-			// 				if ('undefined' === trackerType) {
-			// 					formElement.calibanTrackers = [];
-			// 				}
-			//
-			// 				if (-1 === indexOfArray(formElement.calibanTrackers, trackerInstance)) {
-			// 					// we make sure to setup link only once for each tracker
-			// 					formElement.calibanTrackers.push(trackerInstance);
-			//
-			// 					// Add append fields as hidden elements to form
-			// 					addFormAppendParams(formElement);
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
 
 			/************************************************************
 			 * Constructor
@@ -2347,12 +2354,10 @@ if (typeof window.Caliban !== 'object') {
 			};
 
 			/**
-			 * Override referrer
-			 *
-			 * @param string url
+			 * Return the current referrer
 			 */
-			this.setReferrerUrl = function (url) {
-				configReferrerUrl = url;
+			this.getReferrerUrl = function (url) {
+				return configReferrerUrl;
 			};
 
 			/**
@@ -2379,6 +2384,13 @@ if (typeof window.Caliban !== 'object') {
 			 */
 			this.setAppendParams = function (appendParams) {
 				configAppendParams = isString(appendParams) ? [appendParams] : appendParams;
+			};
+
+			/**
+			 * Returns array of params to be added to querystring for all links and forms
+			 */
+			this.getAppendParams = function () {
+				return configAppendParams;
 			};
 
 			/**
@@ -2419,6 +2431,23 @@ if (typeof window.Caliban !== 'object') {
 			this.discardHashTag = function (enableFilter) {
 				configDiscardHashTag = enableFilter;
 			};
+
+			/**
+			 * Set session data being tracked externally to local object
+			 *
+			 * @param object Session data tracked for current session
+			 */
+			this.setSessionData = function (_sessionData) {
+				sessionData = _sessionData;
+			};
+
+			/**
+			 * Returns session data set locally inside tracker
+			 */
+			this.getSessionData = function () {
+				return sessionData;
+			};
+
 
 			/**
 			 * Set first-party cookie domain
@@ -2582,6 +2611,17 @@ if (typeof window.Caliban !== 'object') {
 			};
 
 			/**
+			 * Add click listener to a specific link element.
+			 * When clicked, Caliban will log the click automatically.
+			 *
+			 * @param DOMElement element
+			 * @param bool enable If false, do not use pseudo click-handler (middle click + context menu)
+			 */
+			this.addSubmitListeners = function () {
+				addSubmitListeners();
+			};
+
+			/**
 			 * Install link tracker.
 			 *
 			 * If you change the DOM of your website or web application you need to make sure to call this method
@@ -2614,8 +2654,6 @@ if (typeof window.Caliban !== 'object') {
 				var self = this;
 				trackCallbackOnReady(function () {
 					addClickListeners(enable, self);
-					addSubmitListeners(self);
-					// addFormData(enable, self);
 				});
 			};
 
