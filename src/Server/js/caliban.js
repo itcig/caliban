@@ -1758,7 +1758,7 @@ if (typeof window.Caliban !== 'object') {
 			}
 
 			function startsUrlWithTrackerUrl(url) {
-				return (configTrackerUrl && url && 0 === getHostName(url).indexOf(getHostName(configTrackerUrl)));
+				return (configTrackerUrl && url && (0 === url.indexOf("/") || 0 === getHostName(url).indexOf(getHostName(configTrackerUrl))));
 			}
 
 			function getSourceElement(sourceElement)
