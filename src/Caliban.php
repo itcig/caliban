@@ -84,9 +84,15 @@ class Caliban extends Singleton {
 	/**
 	 * Caliban constructor
 	 */
-	public function __construct() {
+	public function __construct($session_reference_id = null) {
 		// Load defaults for any properties not explicitly set
 		$this->set_defaults();
+
+		if ($session_reference_id) {
+			$this->set_session_reference_id($session_reference_id);
+
+			$this->state = $this->load_session();
+		}
 	}
 
 	/**
@@ -488,6 +494,9 @@ class Caliban extends Singleton {
 
 		// Store session reference Id in a cookie regardless so we can recall this session if the client closes their browsers and returns prior to cache expiration
 		setcookie(self::SESSION_REFERENCE_KEY, $this->get_session_reference_id(), time() + $this->cache_expiration_seconds, "/", \Cig\get_root_domain());
+
+		// Make cookie available for this request
+		$_COOKIE[self::SESSION_REFERENCE_KEY] = $this->get_session_reference_id();
 
 		// Try to save in storage DB
 		if ($this->storage_db->save($this->get_session_reference_id(), $key, $data)) {
