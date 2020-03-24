@@ -1747,7 +1747,7 @@ if (typeof window.Caliban !== 'object') {
              */
 			function getClassesRegExp(configClasses, defaultClass) {
 				var i,
-					classesRegExp = '(^| )(caliban[_-]' + defaultClass;
+					classesRegExp = '(^| )(cbn[_-]' + defaultClass;
 
 				if (configClasses) {
 					for (i = 0; i < configClasses.length; i++) {
@@ -2748,7 +2748,7 @@ if (typeof window.Caliban !== 'object') {
 		 * Constructor
 		 ************************************************************/
 
-		var applyFirst = ['setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setDebugForms', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'enableLinkTracking'];
+		var applyFirst = ['setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setDebugForms', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'setIgnoreClasses', 'enableLinkTracking'];
 
 		/************************************************************
 		 * Public data and methods
