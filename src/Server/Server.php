@@ -4,10 +4,6 @@ namespace Caliban\Server;
 
 use Caliban\Abstracts\Singleton;
 
-//require_once (__DIR__ . '/../../vendor/autoload.php');
-//
-//require_once(__DIR__ . '/../config.php');
-
 class Server extends Singleton {
 
 	private $request_path;
@@ -78,7 +74,7 @@ class Server extends Singleton {
 	private function collect_data(): void {
 
 		// Track session with passed in request data
-		Collect::get_instance()
+		$collector = Collect::get_instance()
 		       ->set_data($this->parsed_query)
 		       ->init();
 
@@ -100,10 +96,21 @@ class Server extends Singleton {
 				$this->resource_not_found();
 			}
 
+		} else if (!empty($this->parsed_query['send_js'])) {
+
+			header("Content-Type: application/javascript");
+
+			$caliban_data = $collector->get_tracker()->toArray();
+
+			// Send session data to JS tracker and add data to forms
+			print "window._cbn.push(['setSessionData', " . \Cig\to_javascript_object($caliban_data) . "]);\n";
+			print "window._cbn.push(['addSubmitListeners']);\n";
+
 		// Otherwise send back a text response
 		} else {
 
 			header('Content-Type: application/text');
+
 			print "OK";
 		}
 	}

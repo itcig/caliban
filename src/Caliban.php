@@ -84,9 +84,15 @@ class Caliban extends Singleton {
 	/**
 	 * Caliban constructor
 	 */
-	public function __construct() {
+	public function __construct($session_reference_id = null) {
 		// Load defaults for any properties not explicitly set
 		$this->set_defaults();
+
+		if ($session_reference_id) {
+			$this->set_session_reference_id($session_reference_id);
+
+			$this->state = $this->load_session();
+		}
 	}
 
 	/**
@@ -356,13 +362,10 @@ class Caliban extends Singleton {
 			// Add current URI as the original page
 			$session_state->landing_uri = $this->client_uri;
 
-			// Build GA data if present
-			$ga_data = [];
-
 			// Check if GA UserId is already set
-			if (empty($prev_state->ga['uid'])) {
+			if (empty($prev_state->gauid)) {
 				// generate a new anonymous Id if no user is found
-				$ga_data['uid'] = $this->get_client_value('gauid', 'a_' . time() . mt_rand(1000000, 9999999));
+				$session_state->gauid = $this->get_client_value('gauid', 'a_' . time() . mt_rand(1000000, 9999999));
 			}
 
 			// List of allowed UTM parameters
@@ -380,12 +383,9 @@ class Caliban extends Singleton {
 			// Add each UTM parameter with fallback to default string
 			foreach($utm_params as $utm_key) {
 				if (!in_array($utm_key, $this->ignore_params)) {
-					$ga_data[$utm_key] = $this->get_client_value($utm_key, $default_utm_values[$utm_key]);
+					$session_state->{$utm_key} = $this->get_client_value($utm_key, $default_utm_values[$utm_key]);
 				}
 			}
-
-			// Add GA data to session container
-			$session_state->push('ga', $ga_data);
 
 			// Add remaining "first attribution" items and then ignore so they are not added on subsequent requests
 			foreach ($this->first_attribution_params as $first_attribution_param) {
@@ -488,6 +488,9 @@ class Caliban extends Singleton {
 
 		// Store session reference Id in a cookie regardless so we can recall this session if the client closes their browsers and returns prior to cache expiration
 		setcookie(self::SESSION_REFERENCE_KEY, $this->get_session_reference_id(), time() + $this->cache_expiration_seconds, "/", \Cig\get_root_domain());
+
+		// Make cookie available for this request
+		$_COOKIE[self::SESSION_REFERENCE_KEY] = $this->get_session_reference_id();
 
 		// Try to save in storage DB
 		if ($this->storage_db->save($this->get_session_reference_id(), $key, $data)) {
