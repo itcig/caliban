@@ -361,7 +361,7 @@ class Caliban extends Singleton {
 
 			// Add current URI as the original page
 			$session_state->landing_uri = $this->client_uri;
-			
+
 			// Check if GA UserId is already set
 			if (empty($prev_state->gauid)) {
 				// generate a new anonymous Id if no user is found

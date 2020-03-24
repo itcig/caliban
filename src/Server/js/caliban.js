@@ -1018,7 +1018,7 @@ if (typeof window.Caliban !== 'object') {
 			},
 			addHiddenElement: function (node, name, value)
 			{
-				var elHiddenParam =  document.querySelector('[name=' + name + ']');
+				var elHiddenParam =  document.querySelector('[name=\'' + name + '\']');
 
 				if (elHiddenParam) {
 					elHiddenParam.value = value;
@@ -1128,6 +1128,9 @@ if (typeof window.Caliban !== 'object') {
 
 				// Life of the session  (in milliseconds)
 				configSessionTimeout = 7200000, // 2 hours
+
+				// Used to append data to forms but as subkeys of a debug field
+				configDebugForm = false,
 
 				// Browser features via client-side data collection
 				browserFeatures = {},
@@ -1846,7 +1849,9 @@ if (typeof window.Caliban !== 'object') {
 
 				for (var sessionParam in sessionData) {
 					if (sessionData.hasOwnProperty(sessionParam)) {
-						query.addHiddenElement(element, sessionParam, sessionData[sessionParam]);
+						var fieldName = configDebugForm ? 'cbn_debug[' + sessionParam + ']' : sessionParam;
+
+						query.addHiddenElement(element, fieldName, sessionData[sessionParam]);
 					}
 				}
 
@@ -2448,6 +2453,21 @@ if (typeof window.Caliban !== 'object') {
 				return sessionData;
 			};
 
+			/**
+			 * Set forms to debug mode where they will apply form fields as subkeys of a debug field
+			 *
+			 * @param bool enableDebug
+			 */
+			this.setDebugForms = function (enableDebug) {
+				configDebugForm = enableDebug;
+			};
+
+			/**
+			 * Returns if forms are running in debug mode
+			 */
+			this.getDebugForms = function () {
+				return configDebugForm;
+			};
 
 			/**
 			 * Set first-party cookie domain
@@ -2728,7 +2748,7 @@ if (typeof window.Caliban !== 'object') {
 		 * Constructor
 		 ************************************************************/
 
-		var applyFirst = ['setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'enableLinkTracking'];
+		var applyFirst = ['setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setDebugForms', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'enableLinkTracking'];
 
 		/************************************************************
 		 * Public data and methods
