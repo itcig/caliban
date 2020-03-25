@@ -8,20 +8,17 @@
             "email": "bash@capinfogroup.com"
         }
     ],
-	"repositories": [
-		{
-			"type": "path",
-			"url": "../php-helpers",
-			"options": {
-				"symlink": true
-			}
+	"repositories": {
+		"php-helpers": {
+			"type": "git",
+			"url": "https://github.com/itcig/php-helpers.git"
 		}
-	],
+	},
 	"minimum-stability": "dev",
 	"prefer-stable": true,
     "require": {
 	    "php": "^7.1",
-	    "itcig/php-helpers": "*",
+	    "itcig/php-helpers": "^1.0",
         "predis/predis": "^1.1",
 	    "oscarotero/env": "^1.1",
         "vlucas/phpdotenv": "^4.1"
