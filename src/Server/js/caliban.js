@@ -2135,6 +2135,41 @@ if (typeof window.Caliban !== 'object') {
 				}
 			}
 
+			/*
+             * Add submit handlers to FORM elements, except those to be ignored
+             */
+			function addFormData(trackerInstance) {
+				// iterate through FORM elements
+				var i,
+					ignorePattern = getClassesRegExp(configIgnoreClasses, 'ignore'),
+					formElements = documentAlias.forms,
+					formElement = null, trackerType = null;
+
+				if (formElements) {
+					for (i = 0; i < formElements.length; i++) {
+						formElement = formElements[i];
+						if (!ignorePattern.test(formElement.className)) {
+							trackerType = typeof formElement.calibanTrackers;
+
+							if ('undefined' === trackerType) {
+								formElement.calibanTrackers = [];
+							}
+
+							if (-1 === indexOfArray(formElement.calibanTrackers, trackerInstance)) {
+								// we make sure to setup form only once for each tracker
+								formElement.calibanTrackers.push(trackerInstance);
+
+								// Add event listeners to relevant forms onSubmit
+								// addSubmitListener(formElement);
+
+								// Appened form params onInit and not onSubmit to allow working on forms
+								addFormParams(target);
+							}
+						}
+					}
+				}
+			}
+
 			/************************************************************
 			 * Constructor
 			 ************************************************************/
@@ -2631,15 +2666,19 @@ if (typeof window.Caliban !== 'object') {
 			};
 
 			/**
-			 * Add click listener to a specific link element.
-			 * When clicked, Caliban will log the click automatically.
-			 *
-			 * @param DOMElement element
-			 * @param bool enable If false, do not use pseudo click-handler (middle click + context menu)
+			 * Add submit listeners to all non-excluded form elements.
 			 */
 			this.addSubmitListeners = function () {
 				addSubmitListeners();
 			};
+
+			/**
+			 * Add all caliban data as hidden form fields to all non-excluded form elements.
+			 */
+			this.addFormData = function () {
+				addFormData();
+			};
+
 
 			/**
 			 * Install link tracker.

@@ -104,7 +104,7 @@ class Server extends Singleton {
 
 			// Send session data to JS tracker and add data to forms
 			print "window._cbn.push(['setSessionData', " . \Cig\to_javascript_object($caliban_data) . "]);\n";
-			print "window._cbn.push(['addSubmitListeners']);\n";
+			print "window._cbn.push(['addFormData']);\n";
 
 		// Otherwise send back a text response
 		} else {
