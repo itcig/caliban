@@ -2159,11 +2159,8 @@ if (typeof window.Caliban !== 'object') {
 								// we make sure to setup form only once for each tracker
 								formElement.calibanTrackers.push(trackerInstance);
 
-								// Add event listeners to relevant forms onSubmit
-								// addSubmitListener(formElement);
-
 								// Appened form params onInit and not onSubmit to allow working on forms
-								addFormParams(target);
+								addFormParams(formElement);
 							}
 						}
 					}

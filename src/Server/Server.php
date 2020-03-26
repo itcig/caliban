@@ -66,7 +66,16 @@ class Server extends Singleton {
 		$file = '/js/caliban.js';
 
 		header("Content-Type: application/javascript");
-		//		header("Cache-Control: max-age=604800, public");
+
+		if (CBN_DEBUG) {
+			// Never cache when debugging
+			header('Cache-Control: no-cache, no-store, max-age=0, must-revalidate');
+			header('Expires: ' . date("D M j G:i:s T Y", strtotime("-1 hour"))); // Date in the past
+
+		} else {
+			// Set a short, 1-hour cache
+			header("Cache-Control: max-age=3600, public");
+		}
 
 		readfile(dirname(__FILE__) . $file);
 	}
