@@ -8,11 +8,11 @@
     "packages": [
         {
             "name": "itcig/php-helpers",
-            "version": "v1.0.0",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/itcig/php-helpers.git",
-                "reference": "0e684882b93b99e35a3ea94f630c39d49ca5bd11"
+                "reference": "30dd0e78c8f45343916f94249a92a1628ea2cf4c"
             },
             "require": {
                 "php": "^7.1"
@@ -33,7 +33,7 @@
                 }
             ],
             "description": "PHP helper methods",
-            "time": "2020-03-24T12:59:22+00:00"
+            "time": "2020-03-26T03:39:23+00:00"
         },
         {
             "name": "oscarotero/env",
