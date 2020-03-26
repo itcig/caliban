@@ -244,17 +244,17 @@ class Caliban extends Singleton {
 
 		// List of keys in request querystring that are allowed to write to session cache
 		if (empty($this->append_params)) {
-			$this->append_params = defined('APPEND_PARAMS') ? APPEND_PARAMS : [];
+			$this->append_params = defined('CBN_APPEND_PARAMS') ? CBN_APPEND_PARAMS : [];
 		}
 
 		// List keys we should ignore in session cache if found in the request
 		if (empty($this->ignore_params)) {
-			$this->ignore_params = defined('IGNORE_PARAMS') ? IGNORE_PARAMS : [];
+			$this->ignore_params = defined('CBN_IGNORE_PARAMS') ? CBN_IGNORE_PARAMS : [];
 		}
 
 		// Default list of params that are always first attribution without exception
 		if (empty($this->first_attribution_params)) {
-			$this->first_attribution_params = defined('FIRST_ATTRIBUTION_PARAMS') ? FIRST_ATTRIBUTION_PARAMS : [];
+			$this->first_attribution_params = defined('CBN_FIRST_ATTRIBUTION_PARAMS') ? CBN_FIRST_ATTRIBUTION_PARAMS : [];
 		}
 
 		// We will populate this during init()
