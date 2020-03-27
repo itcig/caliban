@@ -2166,7 +2166,8 @@ if (typeof window.Caliban !== 'object') {
 			}
 
 			/*
-             * Add submit handlers to FORM elements, except those to be ignored
+             * Add session data as hidden inputs to FORM elements, except those set to be ignored.
+             * This can be called repeatedly on the same form as session data may change or a form may be rendered after initial DOM load.
              */
 			function addFormData(trackerInstance) {
 				// iterate through FORM elements
@@ -2175,9 +2176,14 @@ if (typeof window.Caliban !== 'object') {
 					formElements = documentAlias.forms,
 					formElement = null, trackerType = null;
 
+				configDebug && console.log('[CALIBAN_DEBUG] Forms found:', (formElements ? query.htmlCollectionToArray(formElements) : null));
+
 				if (formElements) {
 					for (i = 0; i < formElements.length; i++) {
 						formElement = formElements[i];
+
+						configDebug && console.log('[CALIBAN_DEBUG] Checking eligibility of form `' + (formElement.id || formElement.name) + '`');
+
 						if (!ignorePattern.test(formElement.className)) {
 							trackerType = typeof formElement.calibanTrackers;
 
@@ -2187,13 +2193,12 @@ if (typeof window.Caliban !== 'object') {
 								formElement.calibanTrackers = [];
 							}
 
-							if (-1 === indexOfArray(formElement.calibanTrackers, trackerInstance)) {
-								// we make sure to setup form only once for each tracker
-								formElement.calibanTrackers.push(trackerInstance);
+							// Add tracker to FORM for accessing API off element later
+							formElement.calibanTrackers.push(trackerInstance);
 
-								// Appened form params onInit and not onSubmit to allow working on forms
-								addFormParams(formElement);
-							}
+							// Appened form params as hidden elements
+							addFormParams(formElement);
+
 						} else {
 							configDebug && console.log('[CALIBAN_DEBUG] Ignoring form `' + (formElement.id || formElement.name) + '`');
 						}
