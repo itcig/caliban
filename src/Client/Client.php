@@ -43,7 +43,7 @@ class Client extends Singleton {
 			$option_to_add = "_cbn.push(['{$event_name}'";
 
 			// Conditionally add event arguments if set
-			if (!empty($event_params)) {
+			if (!is_null($event_params)) {
 				$option_to_add .= ",";
 
 				if (is_numeric($event_params)) {

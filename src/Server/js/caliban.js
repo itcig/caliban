@@ -164,6 +164,10 @@ if (typeof window.Caliban !== 'object') {
 
 				var fParts, context;
 
+				var functionName = isString(f) ? f : f.name;
+
+				asyncTracker.getDebug() && console.log('[CALIBAN_DEBUG] API: ' + f + '()', parameterArray.length ? parameterArray : '');
+
 				if (isString(f)) {
 					context = asyncTracker;
 
@@ -1129,6 +1133,9 @@ if (typeof window.Caliban !== 'object') {
 				// Life of the session  (in milliseconds)
 				configSessionTimeout = 7200000, // 2 hours
 
+				// Used for console debugging and other tooling in development
+				configDebug = false,
+
 				// Used to append data to forms but as subkeys of a debug field
 				configDebugForm = false,
 
@@ -1812,6 +1819,8 @@ if (typeof window.Caliban !== 'object') {
 
 			function addLinkAppendParams(element)
 			{
+				configDebug && console.log('[CALIBAN_DEBUG] Append qs params to link #' + element.id);
+
 				if (!element || !configAppendParams) {
 					return;
 				}
@@ -1822,6 +1831,8 @@ if (typeof window.Caliban !== 'object') {
 
 				var link = query.getAttributeValueFromNode(element, 'href');
 
+				configDebug && console.log('[CALIBAN_DEBUG] Link append href (before): ' + link);
+
 				var currentUrl = configCustomUrl || locationHrefAlias;
 
 				var index, appendParam;
@@ -1829,16 +1840,22 @@ if (typeof window.Caliban !== 'object') {
 				for (index = 0; index < configAppendParams.length; index++) {
 					appendParam = configAppendParams[index];
 
+					configDebug && console.log('[CALIBAN_DEBUG] Append qs param: ' + appendParam);
+
 					link = removeUrlParameter(link, appendParam);
 
 					link = addUrlParameter(link, appendParam, getUrlParameter(currentUrl, appendParam));
 				}
+
+				configDebug && console.log('[CALIBAN_DEBUG] Link append href (after): ' + link);
 
 				element.setAttribute('href', link);
 			}
 
 			function addFormParams(element)
 			{
+				configDebug && console.log('[CALIBAN_DEBUG] Adding form data to `' + (element.id || element.name) + '`: ', sessionData);
+
 				if (!element || !sessionData) {
 					return;
 				}
@@ -1848,15 +1865,17 @@ if (typeof window.Caliban !== 'object') {
 				}
 
 				for (var sessionParam in sessionData) {
-					if (sessionData.hasOwnProperty(sessionParam)) {
-						var fieldName = configDebugForm ? 'cbn_debug[' + sessionParam + ']' : sessionParam;
+					var fieldName = configDebugForm ? 'cbn_debug[' + sessionParam + ']' : sessionParam;
 
-						query.addHiddenElement(element, fieldName, sessionData[sessionParam]);
-					}
+					query.addHiddenElement(element, fieldName, sessionData[sessionParam]);
+
+					configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + fieldName + ' = ' + sessionData[sessionParam]);
 				}
 
 				// Add session reference Id to form as well
 				query.addHiddenElement(element, configSessionIdParam, loadSessionReferenceId());
+
+				configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + configSessionIdParam + ' = ' + loadSessionReferenceId());
 			}
 
 			// function isLinktoInternalDomain(element)
@@ -1894,6 +1913,8 @@ if (typeof window.Caliban !== 'object') {
              * Process clicks
              */
 			function processClick(sourceElement) {
+
+				configDebug && console.log('Handle click: ' + sourceElement.href || null);
 
 				// in case the clicked element is within the <a> (for example there is a <div> within the <a>) this will get the actual <a> link element
 				sourceElement = getSourceElement(sourceElement);
@@ -2151,6 +2172,8 @@ if (typeof window.Caliban !== 'object') {
 						if (!ignorePattern.test(formElement.className)) {
 							trackerType = typeof formElement.calibanTrackers;
 
+							configDebug && console.log('[CALIBAN_DEBUG] Append session data to form `' + (formElement.id || formElement.name) + '`');
+
 							if ('undefined' === trackerType) {
 								formElement.calibanTrackers = [];
 							}
@@ -2162,6 +2185,8 @@ if (typeof window.Caliban !== 'object') {
 								// Appened form params onInit and not onSubmit to allow working on forms
 								addFormParams(formElement);
 							}
+						} else {
+							configDebug && console.log('[CALIBAN_DEBUG] Ignoring form `' + (formElement.id || formElement.name) + '`');
 						}
 					}
 				}
@@ -2486,6 +2511,22 @@ if (typeof window.Caliban !== 'object') {
 			};
 
 			/**
+			 * Set tracker to debug mode
+			 *
+			 * @param bool enableDebug
+			 */
+			this.setDebug = function (enableDebug) {
+				configDebug = enableDebug;
+			};
+
+			/**
+			 * Returns if tracker is running in debug mode
+			 */
+			this.getDebug = function () {
+				return configDebug;
+			};
+
+			/**
 			 * Set forms to debug mode where they will apply form fields as subkeys of a debug field
 			 *
 			 * @param bool enableDebug
@@ -2784,7 +2825,7 @@ if (typeof window.Caliban !== 'object') {
 		 * Constructor
 		 ************************************************************/
 
-		var applyFirst = ['setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setDebugForms', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'setIgnoreClasses', 'enableLinkTracking'];
+		var applyFirst = ['setDebug', 'setDebugForms', 'setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'setIgnoreClasses', 'enableLinkTracking'];
 
 		/************************************************************
 		 * Public data and methods
