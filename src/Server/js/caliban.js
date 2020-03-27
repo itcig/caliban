@@ -1835,16 +1835,25 @@ if (typeof window.Caliban !== 'object') {
 
 				var currentUrl = configCustomUrl || locationHrefAlias;
 
-				var index, appendParam;
+				var index, appendParam, paramValue;
 
 				for (index = 0; index < configAppendParams.length; index++) {
 					appendParam = configAppendParams[index];
 
-					configDebug && console.log('[CALIBAN_DEBUG] Append qs param: ' + appendParam);
+					paramValue = getUrlParameter(currentUrl, appendParam);
 
-					link = removeUrlParameter(link, appendParam);
+					if (paramValue.length) {
 
-					link = addUrlParameter(link, appendParam, getUrlParameter(currentUrl, appendParam));
+						configDebug && console.log('[CALIBAN_DEBUG] Append qs param: ' + appendParam + ' = ' + paramValue);
+
+						link = removeUrlParameter(link, appendParam);
+
+						link = addUrlParameter(link, appendParam, paramValue);
+
+					} else {
+
+						configDebug && console.log('[CALIBAN_DEBUG] Skipping empty append qs param: ' + appendParam);
+					}
 				}
 
 				configDebug && console.log('[CALIBAN_DEBUG] Link append href (after): ' + link);
