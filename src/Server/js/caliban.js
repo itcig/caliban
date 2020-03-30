@@ -1603,18 +1603,26 @@ if (typeof window.Caliban !== 'object') {
 					var currentTimestampInSeconds = getCurrentTimestampInSeconds();
 
 					if (configSessionIdParamTimeoutInSeconds <= 0) {
-						// console.log('Cross-domain device:', true);
+						configDebug && console.log('[CALIBAN_DEBUG] Cross-domain same user: ', true);
 						return true;
 					}
-					if (currentTimestampInSeconds >= timestampInUrl
-						&& currentTimestampInSeconds <= (timestampInUrl + configSessionIdParamTimeoutInSeconds)) {
+
+					var idValidSecondsRemaining = timestampInUrl - currentTimestampInSeconds + configSessionIdParamTimeoutInSeconds;
+
+					configDebug && console.log('[CALIBAN_DEBUG] Cross-domain timestamps: current (' + currentTimestampInSeconds + ') fromUrl (' + timestampInUrl + ')');
+
+					configDebug && console.log('[CALIBAN_DEBUG] Cross-domain Id timestamp ' + (idValidSecondsRemaining > 0
+						? ('valid for ' + idValidSecondsRemaining + 's')
+						: ('expired ' + idValidSecondsRemaining * -1 + 's ago')));
+
+					if (timestampInUrl >= currentTimestampInSeconds - configSessionIdParamTimeoutInSeconds) {
 						// we only use sessionId if it was generated max 180 seconds ago
-						// console.log('Cross-domain device:', true);
+						configDebug && console.log('[CALIBAN_DEBUG] Cross-domain same user: ', true);
 						return true;
 					}
 				}
 
-				// console.log('Cross-domain device:', false);
+				configDebug && console.log('[CALIBAN_DEBUG] Cross-domain same user: ', false);
 				return false;
 			}
 
@@ -1657,13 +1665,15 @@ if (typeof window.Caliban !== 'object') {
              * Load session reference Id if exising session
              */
 			function loadSessionReferenceId() {
-				configDebug && console.log('[CALIBAN_DEBUG] Get session Id: ' + sessionReferenceId);
+				configDebug && console.log('[CALIBAN_DEBUG] Get session Id: ' + (sessionReferenceId || '(not yet set)'));
 
 				if (!sessionReferenceId) {
 					// We are using locationHrefAlias and not currentUrl on purpose to for sure get the passed URL parameters
 					// from original URL
 					sessionReferenceId = getSessionIdFromUrl(locationHrefAlias);
 					// sessionReferenceId = getSessionIdFromUrl(locationHrefAlias) || getCookie(configSessionIdParam);
+
+					configDebug && console.log('[CALIBAN_DEBUG] Found valid session Id in URL: ' + sessionReferenceId);
 
 					// If not found in the URL and not the begining of a new campaign then look for session reference Id in cookies
 					// We do not care about a cookied session if we deem this to be the start of a new campaign
@@ -1697,7 +1707,7 @@ if (typeof window.Caliban !== 'object') {
 
 				for (var index = 0; index < configCampaignStartParams.length; index++) {
 					if (getUrlParameter(currentUrl, configCampaignStartParams[index])) {
-						configDebug && console.log('[CALIBAN_DEBUG] Starting new camapign/session, `' + configCampaignStartParams[index] + '` found in request');
+						configDebug && console.log('[CALIBAN_DEBUG] Starting new campaign/session, `' + configCampaignStartParams[index] + '` found in request');
 						return true;
 					}
 				}
