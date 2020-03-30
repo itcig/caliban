@@ -1938,10 +1938,12 @@ if (typeof window.Caliban !== 'object') {
 					}
 				}
 
-				// Add session reference Id to form as well
-				query.addHiddenElement(element, configSessionIdParam, );
+				var sessionId = loadSessionReferenceId();
 
-				configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + configSessionIdParam + ' = ' + loadSessionReferenceId());
+				// Add session reference Id to form as well
+				query.addHiddenElement(element, configSessionIdParam, sessionId);
+
+				configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + configSessionIdParam + ' = ' + sessionId);
 			}
 
 			// function isLinktoInternalDomain(element)
