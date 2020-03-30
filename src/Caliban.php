@@ -490,7 +490,7 @@ class Caliban extends Singleton {
 
 			// generate a new anonymous Id if no user is found
 			// TODO: Allow setting a sepcific GA user Id here or even better yet is this too sepcific and should be pre-set using a more generic setter?
-			$session_state->gauid = $this->get_client_value('gauid', array_column($linked_sessions, 'gauid')[0] ?? 'a_' . time() . mt_rand(1000000, 9999999));
+			$session_state->gauid = $this->get_client_value('gauid', array_column($linked_sessions_data ?? [], 'gauid')[0] ?? 'a_' . time() . mt_rand(1000000, 9999999));
 
 			// List of allowed UTM parameters
 			$utm_params = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
