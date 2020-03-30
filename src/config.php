@@ -93,3 +93,16 @@ if (!defined('CBN_FIRST_ATTRIBUTION_PARAMS') && !empty(env('CBN_FIRST_ATTRIBUTIO
 
 	define('CBN_FIRST_ATTRIBUTION_PARAMS', $first_attribution_params);
 }
+
+/**
+ * Campaign start params
+ */
+if (!defined('CBN_CAMPAIGN_START_PARAMS') && !empty(env('CBN_CAMPAIGN_START_PARAMS'))) {
+	// Convert to an array
+	$campaign_start_params = explode(",", env('CBN_CAMPAIGN_START_PARAMS'));
+
+	// Remove whitespace
+	array_walk($campaign_start_params, 'trim');
+
+	define('CBN_CAMPAIGN_START_PARAMS', $campaign_start_params);
+}

@@ -8,8 +8,14 @@ require_once(__DIR__ . '/../config.php');
 
 class Collect extends Singleton {
 
+	/**
+	 * @var \Caliban\Caliban
+	 */
 	private $tracker;
-	
+
+	/**
+	 * @var array
+	 */
 	private $data;
 
 	public function set_data($request_vars) {
@@ -60,7 +66,14 @@ class Collect extends Singleton {
 				$this->tracker->set_session_reference_id($parsed_data[CBN_SESSION_REFERENCE_KEY]);
 			}
 
-			// Mark this as a brand new session if determined in tracker and passed in as `snew`
+			// Set the linked Session Reference Id when generated and passed back from the client
+			if (!empty($parsed_data['link_' . CBN_SESSION_REFERENCE_KEY])) {
+				$this->tracker->link_session_reference_id($parsed_data['link_' . CBN_SESSION_REFERENCE_KEY]);
+			}
+
+			// Mark this as a brand new session if determined in tracker and passed in as `snew`.
+			// Must pass a parameter for new session since the the cookie is already set, we may still be on the same domain
+			// and referer is unreliable, so any assumptions could be wrong.
 			if (isset($parsed_data['snew'])) {
 				$this->tracker->set_new_session(filter_var($parsed_data['snew'], FILTER_VALIDATE_BOOLEAN));
 			}
