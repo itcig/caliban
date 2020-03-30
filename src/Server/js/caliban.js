@@ -1146,9 +1146,6 @@ if (typeof window.Caliban !== 'object') {
 				// Used for console debugging and other tooling in development
 				configDebug = false,
 
-				// Used to append data to forms but as subkeys of a debug field
-				configDebugForm = false,
-
 				// Browser features via client-side data collection
 				browserFeatures = {},
 
@@ -2637,22 +2634,6 @@ if (typeof window.Caliban !== 'object') {
 			 */
 			this.getDebug = function () {
 				return configDebug;
-			};
-
-			/**
-			 * Set forms to debug mode where they will apply form fields as subkeys of a debug field
-			 *
-			 * @param bool enableDebug
-			 */
-			this.setDebugForms = function (enableDebug) {
-				configDebugForm = enableDebug;
-			};
-
-			/**
-			 * Returns if forms are running in debug mode
-			 */
-			this.getDebugForms = function () {
-				return configDebugForm;
 			};
 
 			/**
