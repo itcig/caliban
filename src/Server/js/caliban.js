@@ -1071,6 +1071,9 @@ if (typeof window.Caliban !== 'object') {
 				// Session UUID
 				sessionReferenceId = '',
 
+				// Session UUID stored on client that is being overwritten
+				prevSessionReferenceId = '',
+
 				// Used to pass external data into tracker for modifying DOM and events
 				sessionData = null,
 
@@ -1093,13 +1096,16 @@ if (typeof window.Caliban !== 'object') {
 				configDiscardHashTag,
 
 				// Params to suppress from being tracked
-				configIgnoreParams,
+				configIgnoreParams = ['_id', 'ts_created', 'ts_updated', 'previous_session'],
 
 				// Params to append to all outbound links and forms
 				configAppendParams,
 
 				// Params to only add on first attribution
-				configFirstAttributionParams,
+				configFirstAttributionParams = ['gauid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'],
+
+				// Params to check for which indicate this is the beginning of a new campaign/session
+				configCampaignStartParams = ['utm_campaign', 'gclid', 'msclkid'],
 
 				// The URL parameter that will store the sessionId if cross domain linking is enabled.
 				// The first part of this URL parameter will be 16 char session Id.
@@ -1633,16 +1639,57 @@ if (typeof window.Caliban !== 'object') {
 			}
 
 			/*
-             * Load session reference Id cookie
+             * Load session reference Id if exising session
              */
 			function loadSessionReferenceId() {
+				configDebug && console.log('[CALIBAN_DEBUG] Get session Id: ' + sessionReferenceId);
+
 				if (!sessionReferenceId) {
-					// we are using locationHrefAlias and not currentUrl on purpose to for sure get the passed URL parameters
+					// We are using locationHrefAlias and not currentUrl on purpose to for sure get the passed URL parameters
 					// from original URL
-					sessionReferenceId = getSessionIdFromUrl(locationHrefAlias) || getCookie(configSessionIdParam);
+					sessionReferenceId = getSessionIdFromUrl(locationHrefAlias);
+					// sessionReferenceId = getSessionIdFromUrl(locationHrefAlias) || getCookie(configSessionIdParam);
+
+					// If not found in the URL and not the begining of a new campaign then look for session reference Id in cookies
+					// We do not care about a cookied session if we deem this to be the start of a new campaign
+					if (!sessionReferenceId) {
+
+						var isNewCampaign = isCampaignStart(),
+							cookiedSessionReferenceId = getCookie(configSessionIdParam);
+
+						prevSessionReferenceId = isNewCampaign && cookiedSessionReferenceId;
+						sessionReferenceId = !isNewCampaign && cookiedSessionReferenceId;
+					}
+
+
+					// NOTE: We were using this logic, but what if referrer is blocked and we're mid-funnel. The cookied session would be ignored.
+					// Referrer is simply not reliable enough to use here
+
+					// Following condition must be true to retrieve stored session:
+					// 1. Session reference Id is retrieved
+					// 2. Referrer is NOT empty (this indicates a direct entry from outside browser or explicitly blocked)
+					// 3. Referrer domain is same as current domain
+					// if (cookiedSessionReferenceId && configReferrerUrl && startsUrlWithTrackerUrl(configReferrerUrl)) {
+					//
+					// }
 				}
 
 				return sessionReferenceId;
+			}
+
+			function isCampaignStart() {
+				var currentUrl = configCustomUrl || locationHrefAlias;
+
+				for (var index = 0; index < configCampaignStartParams.length; index++) {
+					if (getUrlParameter(currentUrl, configCampaignStartParams[index])) {
+						configDebug && console.log('[CALIBAN_DEBUG] Starting new camapign/session, `' + configCampaignStartParams[index] + '` found in request');
+						return true;
+					}
+				}
+
+				configDebug && console.log('[CALIBAN_DEBUG] No campaign start params found in request');
+
+				return false;
 			}
 
 			function isPossibleToSetCookieOnDomain(domainToTest)
@@ -1696,12 +1743,7 @@ if (typeof window.Caliban !== 'object') {
 			 * Sends the pageview and browser settings with every request in case of race conditions.
 			 */
 			function getRequest(request) {
-				var referralUrl,
-					referralUrlMaxLength = 1024,
-					currentReferrerHostName,
-					originalReferrerHostName,
-					sessionReferenceId = loadSessionReferenceId(),
-					currentUrl = configCustomUrl || locationHrefAlias,
+				var currentUrl = configCustomUrl || locationHrefAlias,
 					newSession = false;
 
 				if (configCookiesDisabled) {
@@ -1721,17 +1763,24 @@ if (typeof window.Caliban !== 'object') {
 					charSet = null;
 				}
 
-				if (!sessionReferenceId) {
-					// Session Id cookie was not found: we consider this the start of a 'session'
+				// Must pass a parameter for new session since the the cookie is already set, we may still be on the same domain
+				// and referer is unreliable, so any assumptions could be wrong.
+				if (!loadSessionReferenceId()) {
+					// Session Id was not found or we recieved a campaign start parameter: we consider this the start of a 'session'
 					sessionReferenceId = generateRandomUuid();
 
 					newSession = true;
+
+					configDebug && console.log('[CALIBAN_DEBUG] Generated new session Id:' + sessionReferenceId);
+
+					configDebug && console.log('[CALIBAN_DEBUG] Previous session Id was:' + prevSessionReferenceId);
 				}
 
 				// build out the rest of the request
 				request = ((request && (request + '&')) || '') +
 					'sid=' + configTrackerPropertyId +
 					('&' + configSessionIdParam + '=' + sessionReferenceId) +
+					('&link_' + configSessionIdParam + '=' + prevSessionReferenceId) +
 					'&r=' + String(Math.random()).slice(2, 8) + // keep the string to a minimum
 					'&ts=' + getCurrentTimestampInSeconds() +
 					'&url=' + encodeWrapper(purify(currentUrl)) +
@@ -1765,6 +1814,10 @@ if (typeof window.Caliban !== 'object') {
 				classesRegExp += ')( |$)';
 
 				return new RegExp(classesRegExp);
+			}
+
+			function isSameHostname(url1, url2) {
+				return 0 === getHostName(url1).indexOf(getHostName(url2));
 			}
 
 			function startsUrlWithTrackerUrl(url) {
@@ -1874,15 +1927,18 @@ if (typeof window.Caliban !== 'object') {
 				}
 
 				for (var sessionParam in sessionData) {
-					var fieldName = configDebugForm ? 'cbn_debug[' + sessionParam + ']' : sessionParam;
+					// Skip ignored params which are either utility in nature or should never be tracked
+					if (configIgnoreParams.indexOf(sessionParam) === -1) {
+						var fieldName = configDebugForm ? 'cbn_debug[' + sessionParam + ']' : sessionParam;
 
-					query.addHiddenElement(element, fieldName, sessionData[sessionParam]);
+						query.addHiddenElement(element, fieldName, sessionData[sessionParam]);
 
-					configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + fieldName + ' = ' + sessionData[sessionParam]);
+						configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + fieldName + ' = ' + sessionData[sessionParam]);
+					}
 				}
 
 				// Add session reference Id to form as well
-				query.addHiddenElement(element, configSessionIdParam, loadSessionReferenceId());
+				query.addHiddenElement(element, configSessionIdParam, );
 
 				configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + configSessionIdParam + ' = ' + loadSessionReferenceId());
 			}
@@ -2470,14 +2526,36 @@ if (typeof window.Caliban !== 'object') {
 			};
 
 			/**
-			 * Set array of params to be added to querystring for all links and forms
+			 * Add to array of params that are only processed on a landing page
 			 *
-			 * @param string|array appendParams
+			 * @param string|array firstAttributionParams
 			 */
 			this.setFirstAttributionParams = function (firstAttributionParams) {
-				configFirstAttributionParams = isString(firstAttributionParams) ? [firstAttributionParams] : firstAttributionParams;
+				configFirstAttributionParams = isString(firstAttributionParams) ? configFirstAttributionParams.push(firstAttributionParams) : configFirstAttributionParams.concat(firstAttributionParams);
 			};
 
+			/**
+			 * Returns array of params that are only processed on a landing page
+			 */
+			this.getFirstAttributionParams = function () {
+				return configFirstAttributionParams;
+			};
+
+			/**
+			 * Add to array of params to check which indicate this is an inbound link that is the start of a new campaign
+			 *
+			 * @param string|array campaignStartParams
+			 */
+			this.setCampaignStartParams = function (campaignStartParams) {
+				configCampaignStartParams = isString(campaignStartParams) ? configCampaignStartParams.push(campaignStartParams) : configCampaignStartParams.concat(campaignStartParams);
+			};
+
+			/**
+			 * Returns array of params to check which indicate this is an inbound link that is the start of a new campaign
+			 */
+			this.getCampaignStartParams = function () {
+				return configCampaignStartParams;
+			};
 
 			/**
 			 * Override default session Id parameter used in cross-domain URLs and cookies
