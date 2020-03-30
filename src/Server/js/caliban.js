@@ -1146,9 +1146,6 @@ if (typeof window.Caliban !== 'object') {
 				// Used for console debugging and other tooling in development
 				configDebug = false,
 
-				// Used to append data to forms but as subkeys of a debug field
-				configDebugForm = false,
-
 				// Browser features via client-side data collection
 				browserFeatures = {},
 
@@ -1941,10 +1938,12 @@ if (typeof window.Caliban !== 'object') {
 					}
 				}
 
-				// Add session reference Id to form as well
-				query.addHiddenElement(element, configSessionIdParam, );
+				var sessionId = loadSessionReferenceId();
 
-				configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + configSessionIdParam + ' = ' + loadSessionReferenceId());
+				// Add session reference Id to form as well
+				query.addHiddenElement(element, configSessionIdParam, sessionId);
+
+				configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + configSessionIdParam + ' = ' + sessionId);
 			}
 
 			// function isLinktoInternalDomain(element)
@@ -2640,22 +2639,6 @@ if (typeof window.Caliban !== 'object') {
 			};
 
 			/**
-			 * Set forms to debug mode where they will apply form fields as subkeys of a debug field
-			 *
-			 * @param bool enableDebug
-			 */
-			this.setDebugForms = function (enableDebug) {
-				configDebugForm = enableDebug;
-			};
-
-			/**
-			 * Returns if forms are running in debug mode
-			 */
-			this.getDebugForms = function () {
-				return configDebugForm;
-			};
-
-			/**
 			 * Set first-party cookie domain
 			 *
 			 * @param string domain
@@ -2938,7 +2921,7 @@ if (typeof window.Caliban !== 'object') {
 		 * Constructor
 		 ************************************************************/
 
-		var applyFirst = ['setDebug', 'setDebugForms', 'setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'setIgnoreClasses', 'enableLinkTracking'];
+		var applyFirst = ['setDebug', 'setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'setIgnoreClasses', 'setFormInputNamespace', 'enableLinkTracking'];
 
 		/************************************************************
 		 * Public data and methods
