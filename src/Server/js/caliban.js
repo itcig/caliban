@@ -2919,7 +2919,7 @@ if (typeof window.Caliban !== 'object') {
 		 * Constructor
 		 ************************************************************/
 
-		var applyFirst = ['setDebug', 'setDebugForms', 'setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'setIgnoreClasses', 'enableLinkTracking'];
+		var applyFirst = ['setDebug', 'setTrackerUrl', 'enableCrossDomainLinking', 'setSessionTimeout', 'setSecureCookie', 'setCookiePath', 'setCookieDomain', 'setDomains', 'setPropertyId', 'setSessionIdParam', 'setAppendParams', 'setIgnoreClasses', 'setFormInputNamespace', 'enableLinkTracking'];
 
 		/************************************************************
 		 * Public data and methods
