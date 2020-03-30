@@ -573,12 +573,12 @@ class Caliban extends Singleton {
 
 	public function toJSON() {
 
-		return $this->state->output(new JsonStringOutput);
+		return $this->state ? $this->state->output(new JsonStringOutput) : "";
 	}
 
 	public function toArray() {
 
-		return $this->state->output(new ArrayOutput);
+		return $this->state ? $this->state->output(new ArrayOutput) : [];
 	}
 
 	/**
@@ -586,7 +586,7 @@ class Caliban extends Singleton {
 	 */
 	public function response() {
 
-		print $this->state->output(new JsonStringOutput);
+		print $this->state ? $this->state->output(new JsonStringOutput) : "";
 	}
 
 	/**

@@ -1595,6 +1595,8 @@ if (typeof window.Caliban !== 'object') {
 				var browserIdInUrl = deviceIdFromUrl.substr(-1 * lengthBrowserId, lengthBrowserId);
 				var timestampInUrl = parseInt(deviceIdFromUrl.substr(0, deviceIdFromUrl.length - lengthBrowserId), 10);
 
+				configDebug && console.log('[CALIBAN_DEBUG] Verifying device Id (' + thisBrowserId + ') and Id from URL (' + browserIdInUrl + ')');
+
 				if (timestampInUrl && browserIdInUrl && browserIdInUrl === thisBrowserId) {
 					// we only reuse sessionId when used on same device / browser
 
@@ -1618,19 +1620,31 @@ if (typeof window.Caliban !== 'object') {
 
 			function getSessionIdFromUrl(url) {
 				if (!crossDomainTrackingEnabled) {
+					configDebug && console.log('[CALIBAN_DEBUG] Cross-domain sessions disabled');
 					return null;
 				}
 
 				// problem different timezone or when the time on the computer is not set correctly it may re-use
 				// the same sessionId again. therefore we also have a factor like hashed user agent to reduce possible
 				// activation of a sessionId on other device
-				var sessionId = getUrlParameter(url, configSessionIdParam);
+				var crossDomainSessionId = getUrlParameter(url, configSessionIdParam);
+
+				if (!crossDomainSessionId) {
+					return null;
+				}
+
+				var crossDomainSessionIdParts = crossDomainSessionId.split('.');
+
+				var sessionId = crossDomainSessionIdParts[0],
+					deviceId = crossDomainSessionIdParts[1];
+
+				configDebug && console.log('[CALIBAN_DEBUG] Get session Id from URL: ' + sessionId);
 
 				if (!sessionId) {
 					return null;
 				}
 
-				var deviceId = getUrlParameter(url, 'cdid');
+				configDebug && console.log('[CALIBAN_DEBUG] Get device Id from URL: ' + deviceId);
 
 				if (isSameCrossDomainDevice(deviceId)) {
 					return String(sessionId);
@@ -1789,7 +1803,7 @@ if (typeof window.Caliban !== 'object') {
 					// ((configIgnoreParams && configIgnoreParams.length) ? '&ignr=' + encodeWrapper(configIgnoreParams) : '') +
 					((configAppendParams && configAppendParams.length) ? '&apnd=' + encodeWrapper(configAppendParams) : '') +
 					'&ces=' + Math.floor(configSessionTimeout / 1000) +
-					'&cdid=' + makeCrossDomainDeviceId() +
+					// '&cdid=' + makeCrossDomainDeviceId() +
 					(charSet ? '&cs=' + encodeWrapper(charSet) : '') +
 					'&snew=' + newSession;
 
@@ -1864,7 +1878,7 @@ if (typeof window.Caliban !== 'object') {
 				// we need to remove the parameter and add it again if needed to make sure we have latest timestamp
 				link = removeUrlParameter(link, configSessionIdParam);
 
-				var crossDomainSessionId = loadSessionReferenceId();
+				var crossDomainSessionId = loadSessionReferenceId() + '.' + makeCrossDomainDeviceId();
 
 				link = addUrlParameter(link, configSessionIdParam, crossDomainSessionId);
 
