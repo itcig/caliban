@@ -483,10 +483,10 @@ class Caliban extends Singleton {
 			$session_state->ts_created = $current_timestamp;
 
 			// Add referrer
-			$session_state->referrer = $this->client_referrer;
+			$session_state->oref = $this->client_referrer;
 
 			// Add current URI as the original page
-			$session_state->landing_uri = $this->client_uri;
+			$session_state->opage = $this->client_uri;
 
 			// generate a new anonymous Id if no user is found
 			// TODO: Allow setting a sepcific GA user Id here or even better yet is this too sepcific and should be pre-set using a more generic setter?
