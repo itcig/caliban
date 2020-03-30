@@ -1107,6 +1107,10 @@ if (typeof window.Caliban !== 'object') {
 				// Params to check for which indicate this is the beginning of a new campaign/session
 				configCampaignStartParams = ['utm_campaign', 'gclid', 'msclkid'],
 
+				// Will add all form field input names as an array under a parent key
+				// i.e. <input type="hidden" name="mynamespace[param_1]" /> instead of <input type="hidden" name="param_1" />
+				configFormInputNamespace,
+
 				// The URL parameter that will store the sessionId if cross domain linking is enabled.
 				// The first part of this URL parameter will be 16 char session Id.
 				// The second part is the 10 char current timestamp and the third and last part will be a 6 characters deviceId
@@ -1929,7 +1933,7 @@ if (typeof window.Caliban !== 'object') {
 				for (var sessionParam in sessionData) {
 					// Skip ignored params which are either utility in nature or should never be tracked
 					if (configIgnoreParams.indexOf(sessionParam) === -1) {
-						var fieldName = configDebugForm ? 'cbn_debug[' + sessionParam + ']' : sessionParam;
+						var fieldName = configFormInputNamespace ? configFormInputNamespace + '[' + sessionParam + ']' : sessionParam;
 
 						query.addHiddenElement(element, fieldName, sessionData[sessionParam]);
 
@@ -2601,6 +2605,23 @@ if (typeof window.Caliban !== 'object') {
 			this.getSessionData = function () {
 				return sessionData;
 			};
+
+			/**
+			 * Set tracker namespace for all form input appends
+			 *
+			 * @param string formInputNamespace
+			 */
+			this.setFormInputNamespace = function (formInputNamespace) {
+				configFormInputNamespace = formInputNamespace;
+			};
+
+			/**
+			 * Returns tracker namespace used for all form input appends
+			 */
+			this.getFormInputNamespace = function () {
+				return configFormInputNamespace;
+			};
+
 
 			/**
 			 * Set tracker to debug mode
