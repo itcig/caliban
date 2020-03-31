@@ -1,0 +1,9 @@
+/*!
+ * Caliban - anonymous, cross-domain, session tracker
+ *
+ * JavaScript tracking client
+ *
+ * @link https://github.com/itcig/caliban
+ * @source https://github.com/itcig/caliban/blob/master/src/server/js/caliban.js
+ * @license https://github.com/itcig/caliban/blob/master/LICENSE MIT
+ */

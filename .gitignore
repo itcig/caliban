@@ -1,7 +1,9 @@
 .DS_Store
 
 # Dependencies
+node_modules
 vendor
+yarn-error.log
 
 # Environmnet
 .env
