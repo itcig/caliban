@@ -1088,7 +1088,7 @@ if (typeof window.Caliban !== 'object') {
                 // Default is user agent defined.
                 configCookiePath,
                 // Whether to use "Secure" cookies that only work over SSL
-                configCookieIsSecure = false,
+                configCookieIsSecure = true,
                 // First-party cookies are disabled
                 configCookiesDisabled = false,
                 // Do Not Track
@@ -1142,6 +1142,7 @@ if (typeof window.Caliban !== 'object') {
                     (msToExpire ? ';expires=' + expiryDate.toGMTString() : '') +
                     ';path=' +
                     (path || '/') +
+                    ';samesite=none' +
                     (domain ? ';domain=' + domain : '') +
                     (isSecure ? ';secure' : '');
             }
