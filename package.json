@@ -16,7 +16,7 @@
 	},
 	"scripts": {
 		"build": "webpack --progress -p --config ./build/webpack.config.js",
-		"changelog": "npx auto-changelog -p --commit-limit false --unreleased --template keepachangelog",
+		"changelog": "npx auto-changelog -p --commit-limit false --unreleased --template keepachangelog --starting-commit 7fe03008f2c6f39f3475808cf6416da008d32fc2",
 		"prettier": "prettier --write \"{src,test}/**/*.js\"",
 		"release": "release-it --no-npm.publish",
 		"release:patch": "release-it --ci patch --no-npm.publish",
