@@ -63,7 +63,6 @@ class Server extends Singleton {
 	}
 
 	private function send_main_js(): void {
-		$file = '/js/caliban.js';
 
 		header("Content-Type: application/javascript");
 
@@ -77,7 +76,8 @@ class Server extends Singleton {
 			header("Cache-Control: max-age=3600, public");
 		}
 
-		readfile(dirname(__FILE__) . $file);
+		// Serve distribution JS build unless debugging
+		readfile(dirname(__FILE__) . (CBN_DEBUG ? '/js/caliban.js' : '/../../dist/js/caliban.js'));
 	}
 
 	private function collect_data(): void {

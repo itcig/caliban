@@ -2,18 +2,13 @@
     "name": "itcig/caliban",
     "description": "Utility for reading and writing client session data",
     "type": "library",
+	"license": "MIT",
     "authors": [
         {
             "name": "Brad",
             "email": "bash@capinfogroup.com"
         }
     ],
-	"repositories": {
-		"php-helpers": {
-			"type": "git",
-			"url": "https://github.com/itcig/php-helpers.git"
-		}
-	},
 	"minimum-stability": "dev",
 	"prefer-stable": true,
     "require": {
