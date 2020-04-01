@@ -109,6 +109,10 @@ class Server extends Singleton {
 
 			header("Content-Type: application/javascript");
 
+			// Never cache
+			header('Cache-Control: no-cache, no-store, max-age=0, must-revalidate');
+			header('Expires: ' . date("D M j G:i:s T Y", strtotime("-1 hour"))); // Date in the past
+
 			$caliban_data = $collector->get_tracker()->toArray();
 
 			// Send session data to JS tracker and add data to forms
