@@ -1061,7 +1061,7 @@ if (typeof window.Caliban !== 'object') {
                 // Disallow hash tags in URL
                 configDiscardHashTag,
                 // Params to suppress from being tracked
-                configIgnoreParams = ['_id', 'ts_created', 'ts_updated', 'previous_session'],
+                configIgnoreParams = ['_id'],
                 // Params to append to all outbound links and forms
                 configAppendParams,
                 // Params to only add on first attribution

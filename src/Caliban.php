@@ -418,8 +418,8 @@ class Caliban extends Singleton {
 				$linked_session = SessionObject::fromString($linked_cache_data);
 
 				// If a linked session is found and that session is valid by current expiration settings then attach previous campaign session as sub-key
-				if (!empty($linked_session->ts_updated) &&
-				    (time() - $linked_session->ts_updated) < $this->cache_expiration_seconds) {
+				if (!empty($linked_session->cbn_updated) &&
+				    (time() - $linked_session->cbn_updated) < $this->cache_expiration_seconds) {
 
 					// Remove any old sessions from the linked session object to avoid an infinite nesting scenario with huge objects.
 					// This would likely point to a bug and not useful data anyways and this is not the place to capture that.
@@ -480,7 +480,7 @@ class Caliban extends Singleton {
 			$session_state->_id = $this->get_session_reference_id();
 
 			// Add created timestamp
-			$session_state->ts_created = $current_timestamp;
+			$session_state->cbn_created = $current_timestamp;
 
 			// Add referrer
 			$session_state->oref = $this->client_referrer;
@@ -536,10 +536,10 @@ class Caliban extends Singleton {
 		$session_state->last_uri = $this->client_uri;
 
 		// Modify updated timestamp which will be same as create for new sessions
-		$session_state->ts_updated = $current_timestamp;
+		$session_state->cbn_updated = $current_timestamp;
 
 		// Duration of the session
-		$session_state->cbn_duration = ($session_state->ts_updated ?? $current_timestamp) - ($session_state->ts_created ?? $current_timestamp);
+		$session_state->cbn_duration = ($session_state->cbn_updated ?? $current_timestamp) - ($session_state->cbn_created ?? $current_timestamp);
 
 		// Loop through last attribution keys and add/update
 		foreach ($this->last_attribution_params as $last_attribution_param) {
