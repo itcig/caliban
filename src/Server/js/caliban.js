@@ -1912,16 +1912,7 @@ if (typeof window.Caliban !== 'object') {
                     return;
                 }
 
-                for (var sessionParam in sessionData) {
-                    // Skip ignored params which are either utility in nature or should never be tracked
-                    if (configIgnoreParams.indexOf(sessionParam) === -1) {
-                        var fieldName = configFormInputNamespace ? configFormInputNamespace + '[' + sessionParam + ']' : sessionParam;
-
-                        query.addHiddenElement(element, fieldName, sessionData[sessionParam]);
-
-                        configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + fieldName + ' = ' + sessionData[sessionParam]);
-                    }
-                }
+                addFormParamFields(element, sessionData, configFormInputNamespace);
 
                 var sessionId = loadSessionReferenceId();
 
@@ -1929,6 +1920,25 @@ if (typeof window.Caliban !== 'object') {
                 query.addHiddenElement(element, configSessionIdParam, sessionId);
 
                 configDebug && console.log('[CALIBAN_DEBUG] Adding hidden field ' + configSessionIdParam + ' = ' + sessionId);
+            }
+
+            function addFormParamFields(formElement, fieldsData, fieldPrefix) {
+                for (var sessionParam in fieldsData) {
+                    // Skip ignored params which are either utility in nature or should never be tracked
+                    if (configIgnoreParams.indexOf(sessionParam) === -1) {
+                        var fieldName = fieldPrefix ? fieldPrefix + '[' + sessionParam + ']' : sessionParam;
+
+                        // If an object, add recursively
+                        if (typeof fieldsData[sessionParam] === 'object') {
+                            addFormParamFields(formElement, fieldsData[sessionParam], fieldName);
+                        } else {
+                            query.addHiddenElement(formElement, fieldName, fieldsData[sessionParam]);
+
+                            configDebug &&
+                                console.log('[CALIBAN_DEBUG] Adding hidden field ' + fieldName + ' = ' + fieldsData[sessionParam]);
+                        }
+                    }
+                }
             }
 
             // function isLinktoInternalDomain(element)
