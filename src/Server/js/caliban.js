@@ -1932,6 +1932,7 @@ if (typeof window.Caliban !== 'object') {
                         if (typeof fieldsData[sessionParam] === 'object') {
                             addFormParamFields(formElement, fieldsData[sessionParam], fieldName);
                         } else {
+                            // Add hidden form field
                             query.addHiddenElement(formElement, fieldName, fieldsData[sessionParam]);
 
                             configDebug &&
