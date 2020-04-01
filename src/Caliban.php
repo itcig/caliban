@@ -621,7 +621,16 @@ class Caliban extends Singleton {
 
 		// Store session reference Id in a cookie regardless so we can recall this session if the client closes their browsers and returns prior to cache expiration
 		// TODO: When upgrading min version to PHP 7.3 then we can use PHP setcookie() samesite flag
-		setcookie(self::SESSION_REFERENCE_KEY, $this->get_session_reference_id(), time() + $this->cache_expiration_seconds, "/; SameSite=None; Secure");
+		if (version_compare(phpversion(), '7.3.0') >= 0) {
+			setcookie(self::SESSION_REFERENCE_KEY, $this->get_session_reference_id(), [
+				'expires' => time() + $this->cache_expiration_seconds,
+				'path' => "/",
+				'secure' => true,
+				'samesite' => 'None',
+			]);
+		} else {
+			header(sprintf("Set-Cookie: %s=%s; Expires=%s; Path=/; SameSite=None; Secure", self::SESSION_REFERENCE_KEY, $this->get_session_reference_id(), date("D, d M Y H:i:s", time() + $this->cache_expiration_seconds) . 'GMT'));
+		}
 
 		// Make cookie available for this request
 		$_COOKIE[self::SESSION_REFERENCE_KEY] = $this->get_session_reference_id();
