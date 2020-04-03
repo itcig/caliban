@@ -14,6 +14,7 @@ use \Caliban\Components\Storage\StorageInterface;
 use \Caliban\Components\Storage\Redis;
 
 use \Caliban\Lib\SearchEngine;
+use \Caliban\Lib\SocialNetwork;
 
 use \Caliban\Client\Client;
 use \Caliban\Server\Server;
@@ -457,6 +458,7 @@ class Caliban extends Singleton {
 				'last_attribution_params' => $this->last_attribution_params,
 				'campaign_start_params' => $this->campaign_start_params,
 				'search_engine' =>  SearchEngine::get_instance()->extract_information_from_url($this->client_referrer),
+				'social_network' => SocialNetwork::get_instance()->extract_information_from_url($this->client_referrer),
 				'client_query_vars' => $this->get_client_query_vars(),
 				'cookies' => array_keys($_COOKIE),
 				'servervars' => [
@@ -528,7 +530,7 @@ class Caliban extends Singleton {
 
 				} else {
 					// TODO: Attempt to find social network
-					 $social_network_info = null; // SocialNetwork::get_instance()->extract_information_from_url($this->client_referrer);
+					 $social_network_info = SocialNetwork::get_instance()->extract_information_from_url($this->client_referrer);
 
 					if (!empty($social_network_info['name'])) {
 						// TODO: replace with kebab php-helper function
