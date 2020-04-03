@@ -61,6 +61,10 @@ class Collect extends Singleton {
 				$this->tracker->set_append_params(explode(",", $parsed_data['apnd']));
 			}
 
+			if (!empty($parsed_data['ignr'])) {
+				$this->tracker->set_ignore_params(explode(",", $parsed_data['ignr']));
+			}
+
 			// Set the Session Reference Id when generated and passed back from the client
 			if (!empty($parsed_data[CBN_SESSION_REFERENCE_KEY])) {
 				$this->tracker->set_session_reference_id($parsed_data[CBN_SESSION_REFERENCE_KEY]);
