@@ -1775,7 +1775,7 @@ if (typeof window.Caliban !== 'object') {
                     '&url=' +
                     encodeWrapper(purify(currentUrl)) +
                     (configReferrerUrl.length ? '&urlref=' + encodeWrapper(purify(configReferrerUrl)) : '') +
-                    // ((configIgnoreParams && configIgnoreParams.length) ? '&ignr=' + encodeWrapper(configIgnoreParams) : '') +
+                    (configIgnoreParams && configIgnoreParams.length ? '&ignr=' + encodeWrapper(configIgnoreParams) : '') +
                     (configAppendParams && configAppendParams.length ? '&apnd=' + encodeWrapper(configAppendParams) : '') +
                     '&ces=' +
                     Math.floor(configSessionTimeout / 1000) +
@@ -2506,6 +2506,24 @@ if (typeof window.Caliban !== 'object') {
              */
             this.getCurrentUrl = function() {
                 return configCustomUrl || locationHrefAlias;
+            };
+
+            /**
+             * Add to array of params that are ignored by form append and session data
+             *
+             * @param string|array ignoreParams
+             */
+            this.setIgnoreParams = function(ignoreParams) {
+                configIgnoreParams = isString(ignoreParams)
+                    ? configIgnoreParams.push(ignoreParams)
+                    : configIgnoreParams.concat(ignoreParams);
+            };
+
+            /**
+             * Returns array of params that are ignored by form append and session data
+             */
+            this.getIgnoreParams = function() {
+                return configIgnoreParams;
             };
 
             /**
