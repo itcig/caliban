@@ -4,15 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2c5240f9c2fb1b072ceb72ce386261b0",
+    "content-hash": "074cfd0ca126b3c8332a64cbfbd13cf8",
     "packages": [
         {
             "name": "itcig/php-helpers",
-            "version": "v1.0.2",
+            "version": "v1.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/itcig/php-helpers.git",
-                "reference": "b3bdf77c1145c5d8dab3f5095b25d3fe744b7fe0"
+                "reference": "09f155fd5e1f405a6ac9070166cc020092c324d5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/itcig/php-helpers/zipball/09f155fd5e1f405a6ac9070166cc020092c324d5",
+                "reference": "09f155fd5e1f405a6ac9070166cc020092c324d5",
+                "shasum": ""
             },
             "require": {
                 "php": "^7.1"
@@ -26,6 +32,10 @@
                     "Cig\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
             "authors": [
                 {
                     "name": "Brad",
@@ -33,7 +43,7 @@
                 }
             ],
             "description": "PHP helper methods",
-            "time": "2020-03-30T03:11:09+00:00"
+            "time": "2020-04-03T00:15:20+00:00"
         },
         {
             "name": "oscarotero/env",

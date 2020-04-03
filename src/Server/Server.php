@@ -4,6 +4,8 @@ namespace Caliban\Server;
 
 use Caliban\Abstracts\Singleton;
 
+require_once(__DIR__ . '/../config.php');
+
 class Server extends Singleton {
 
 	private $request_path;
