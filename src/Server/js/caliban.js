@@ -2950,6 +2950,7 @@ if (typeof window.Caliban !== 'object') {
             'setDomains',
             'setPropertyId',
             'setSessionIdParam',
+            'setIgnoreParams',
             'setAppendParams',
             'setIgnoreClasses',
             'setFormInputNamespace',
