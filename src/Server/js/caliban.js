@@ -1883,16 +1883,22 @@ if (typeof window.Caliban !== 'object') {
                 for (index = 0; index < configAppendParams.length; index++) {
                     appendParam = configAppendParams[index];
 
-                    paramValue = getUrlParameter(currentUrl, appendParam);
+                    // Ignore appendParams if they are also campaignStartParams or this would create an endless loop of restarting the session on every subsequent page
+                    if (
+                        !configCampaignStartParams.length ||
+                        (configCampaignStartParams.length && configCampaignStartParams.indexOf(appendParam) === -1)
+                    ) {
+                        paramValue = getUrlParameter(currentUrl, appendParam);
 
-                    if (paramValue.length) {
-                        configDebug && console.log('[CALIBAN_DEBUG] Append qs param: ' + appendParam + ' = ' + paramValue);
+                        if (paramValue.length) {
+                            configDebug && console.log('[CALIBAN_DEBUG] Append qs param: ' + appendParam + ' = ' + paramValue);
 
-                        link = removeUrlParameter(link, appendParam);
+                            link = removeUrlParameter(link, appendParam);
 
-                        link = addUrlParameter(link, appendParam, paramValue);
-                    } else {
-                        configDebug && console.log('[CALIBAN_DEBUG] Skipping empty append qs param: ' + appendParam);
+                            link = addUrlParameter(link, appendParam, paramValue);
+                        } else {
+                            configDebug && console.log('[CALIBAN_DEBUG] Skipping empty append qs param: ' + appendParam);
+                        }
                     }
                 }
 
