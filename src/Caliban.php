@@ -13,6 +13,8 @@ use \Caliban\Components\Output\ArrayOutput;
 use \Caliban\Components\Storage\StorageInterface;
 use \Caliban\Components\Storage\Redis;
 
+use \Caliban\Lib\SearchEngine;
+
 use \Caliban\Client\Client;
 use \Caliban\Server\Server;
 
@@ -454,6 +456,7 @@ class Caliban extends Singleton {
 				'first_attribution_params' => $this->first_attribution_params,
 				'last_attribution_params' => $this->last_attribution_params,
 				'campaign_start_params' => $this->campaign_start_params,
+				'search_engine' =>  SearchEngine::get_instance()->extract_information_from_url($this->client_referrer),
 				'client_query_vars' => $this->get_client_query_vars(),
 				'cookies' => array_keys($_COOKIE),
 				'servervars' => [
@@ -508,6 +511,35 @@ class Caliban extends Singleton {
 			foreach($utm_params as $utm_key) {
 				if (!in_array($utm_key, $this->ignore_params)) {
 					$session_state->{$utm_key} = $this->get_client_value($utm_key, $default_utm_values[$utm_key]);
+				}
+			}
+
+			// For direct traffic with a referrer, attempt to parse as a known search engine
+			if ($session_state->utm_source === '(direct)' && $this->client_referrer) {
+
+				// Extract search engine info from referrer if possible
+				$search_engine_info = SearchEngine::get_instance()->extract_information_from_url($this->client_referrer);
+
+				// If search engine found, add as source and `organic` for medium
+				if (!empty($search_engine_info['name'])) {
+					// TODO: replace with kebab php-helper function
+					$session_state->utm_source = strtolower(preg_replace("/\s/", "-", $search_engine_info['name']));
+					$session_state->utm_medium = "organic";
+
+				} else {
+					// TODO: Attempt to find social network
+					 $social_network_info = null; // SocialNetwork::get_instance()->extract_information_from_url($this->client_referrer);
+
+					if (!empty($social_network_info['name'])) {
+						// TODO: replace with kebab php-helper function
+						$session_state->utm_source = strtolower(preg_replace("/\s/", "-", $social_network_info['name']));
+						$session_state->utm_medium = "social";
+
+						// Otherwise use referrer domain as the `referral` link
+					} else {
+						$session_state->utm_source = @parse_url($this->client_referrer, PHP_URL_HOST);
+						$session_state->utm_medium = "referral";
+					}
 				}
 			}
 
