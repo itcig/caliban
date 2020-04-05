@@ -516,8 +516,8 @@ class Caliban extends Singleton {
 				}
 			}
 
-			// For direct traffic with a referrer, attempt to parse as a known search engine
-			if ($session_state->utm_source === '(direct)' && $this->client_referrer) {
+			// For direct traffic with a referrer (that is not the current hostname), attempt to parse as a known search engine, social network or set referral
+			if ($session_state->utm_source === '(direct)' && $this->is_outside_referrer()) {
 
 				// Extract search engine info from referrer if possible
 				$search_engine_info = SearchEngine::get_instance()->extract_information_from_url($this->client_referrer);
@@ -728,12 +728,10 @@ class Caliban extends Singleton {
 	/**
 	 * Check if session referrer is from a different domain than the client request
 	 *
-	 * TODO: What do we want to do if referrer is blank?
-	 *
 	 * @return bool True if domain does not match
 	 */
-	private function is_outside_referrer() {
-		return !\Cig\is_same_hostname($this->client_referrer, $this->client_uri);
+	public function is_outside_referrer() {
+		return !empty($this->client_referrer) && !\Cig\is_same_hostname($this->client_referrer, $this->client_uri);
 	}
 
 	/**
