@@ -43,6 +43,7 @@
 		"@babel/cli": "^7.4.4",
 		"@babel/core": "^7.4.5",
 		"@babel/runtime": "^7.4.5",
+		"auto-changelog": "^1.16.4",
 		"babel-cli": "^6.26.0",
 		"babel-eslint": "^10.0.2",
 		"babel-loader": "^8.0.6",
