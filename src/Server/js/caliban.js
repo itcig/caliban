@@ -1777,6 +1777,12 @@ if (typeof window.Caliban !== 'object') {
                     (configReferrerUrl.length ? '&urlref=' + encodeWrapper(purify(configReferrerUrl)) : '') +
                     (configIgnoreParams && configIgnoreParams.length ? '&ignr=' + encodeWrapper(configIgnoreParams) : '') +
                     (configAppendParams && configAppendParams.length ? '&apnd=' + encodeWrapper(configAppendParams) : '') +
+                    (configFirstAttributionParams && configFirstAttributionParams.length
+                        ? '&fattr=' + encodeWrapper(configFirstAttributionParams)
+                        : '') +
+                    (configCampaignStartParams && configCampaignStartParams.length
+                        ? '&cmpst=' + encodeWrapper(configCampaignStartParams)
+                        : '') +
                     '&ces=' +
                     Math.floor(configSessionTimeout / 1000) +
                     // '&cdid=' + makeCrossDomainDeviceId() +
@@ -1884,6 +1890,7 @@ if (typeof window.Caliban !== 'object') {
                     appendParam = configAppendParams[index];
 
                     // Ignore appendParams if they are also campaignStartParams or this would create an endless loop of restarting the session on every subsequent page
+                    // TODO: Should we also exlclude static params like UTM and/or configFirstAttributionParams since they won't be stored after landing page?
                     if (
                         !configCampaignStartParams.length ||
                         (configCampaignStartParams.length && configCampaignStartParams.indexOf(appendParam) === -1)

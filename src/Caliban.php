@@ -233,7 +233,7 @@ class Caliban extends Singleton {
 	 * @return Caliban This class instance
 	 */
 	public function set_ignore_params(array $keys): Caliban {
-		$this->ignore_params = array_merge($this->ignore_params, $keys);
+		$this->ignore_params = array_unique(array_merge($this->ignore_params, $keys));
 
 		return $this;
 	}
@@ -246,7 +246,20 @@ class Caliban extends Singleton {
 	 * @return Caliban This class instance
 	 */
 	public function set_campaign_start_params(array $keys): Caliban {
-		$this->campaign_start_params = array_merge($this->campaign_start_params, $keys);
+		$this->campaign_start_params = array_unique(array_merge($keys, self::STATIC_CAMPAIGN_PARAMS));
+
+		return $this;
+	}
+
+	/**
+	 * Set first attribution params
+	 *
+	 * @param array $keys List of keys we should check and only store if on a landing page / starting a new campaign
+	 *
+	 * @return Caliban This class instance
+	 */
+	public function set_first_attribution_params(array $keys): Caliban {
+		$this->first_attribution_params = $keys;
 
 		return $this;
 	}
@@ -352,14 +365,26 @@ class Caliban extends Singleton {
 		}
 	}
 
+	// Add remaining "first attribution" items including "campaign start" params, but excludding static ones which are dealt with separately
+	private function finalize_first_attribution_params(): void {
+		$this->first_attribution_params = array_values(array_unique(array_diff(
+			array_merge(
+				$this->campaign_start_params,
+				$this->first_attribution_params
+			),
+			self::STATIC_USE_PARAMS,
+			$this->ignore_params,
+		)));
+	}
+
 	/**
 	 * Build an array of params that are not defined with static use cases, are not locked to first attribution only and are not ignored
 	 */
 	private function set_last_attribution_params(): void {
 		// Build remainder of client query vars that are not ignored or set to first attribution
-		$last_attribution_filter_out_keys = array_merge(self::STATIC_USE_PARAMS,$this->first_attribution_params ?? [], $this->ignore_params ?? []);
+		$last_attribution_filter_out_keys = array_merge(self::STATIC_USE_PARAMS, $this->first_attribution_params, $this->ignore_params);
 
-		$this->last_attribution_params = array_values(array_diff(array_keys($this->get_client_query_vars()), $last_attribution_filter_out_keys));
+		$this->last_attribution_params = array_values(array_unique(array_diff(array_keys($this->get_client_query_vars()), $last_attribution_filter_out_keys)));
 	}
 
 	private function init_storage(): void {
@@ -432,6 +457,9 @@ class Caliban extends Singleton {
 				}
 			}
 		}
+
+		// There are several config params that are merged here like first atrribution and campaign start
+		$this->finalize_first_attribution_params();
 
 		// Get passed params which are not designated for other purposes nor suppressed from tracker
 		$this->set_last_attribution_params();
@@ -545,7 +573,7 @@ class Caliban extends Singleton {
 				}
 			}
 
-			// Add remaining "first attribution" items and then ignore so they are not added on subsequent requests
+			// Add remaining "first attribution" items including "campaign start" params, but excludding static ones dealt with above
 			foreach ($this->first_attribution_params as $first_attribution_param) {
 				$session_state->{$first_attribution_param} = $this->get_client_value($first_attribution_param);
 			}
