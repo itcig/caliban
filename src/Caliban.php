@@ -373,7 +373,7 @@ class Caliban extends Singleton {
 				$this->first_attribution_params
 			),
 			self::STATIC_USE_PARAMS,
-			$this->ignore_params,
+			$this->ignore_params
 		)));
 	}
 
