@@ -1092,7 +1092,7 @@ if (typeof window.Caliban !== 'object') {
                 // First-party cookies are disabled
                 configCookiesDisabled = false,
                 // Do Not Track
-                configDoNotTrack,
+                configDoNotTrack = false,
                 // Life of the session  (in milliseconds)
                 configSessionTimeout = 7200000, // 2 hours
                 // Used for console debugging and other tooling in development
@@ -1117,7 +1117,9 @@ if (typeof window.Caliban !== 'object') {
                 // Domain hash value
                 domainHash,
                 // Cookies to remove when cleaning up
-                configCookiesToDelete = ['id', 'cbn'];
+                configCookiesToDelete = ['id', 'cbn'],
+                // Save result of checking if cookies are available
+                hasCookiesResult;
 
             /*
              * Set cookie value
@@ -1401,8 +1403,14 @@ if (typeof window.Caliban !== 'object') {
                     return '0';
                 }
 
+                // If previously tested, return that value instead of reading/writing test cookie again
+                if (hasCookiesResult) {
+                    return hasCookiesResult;
+                }
+
                 if (!isDefined(windowAlias.showModalDialog) && isDefined(navigatorAlias.cookieEnabled)) {
-                    return navigatorAlias.cookieEnabled ? '1' : '0';
+                    hasCookiesResult = navigatorAlias.cookieEnabled ? '1' : '0';
+                    return hasCookiesResult;
                 }
 
                 // for IE we want to actually set the cookie to avoid trigger a warning eg in IE see #11507
@@ -1411,6 +1419,12 @@ if (typeof window.Caliban !== 'object') {
 
                 var hasCookie = getCookie(testCookieName) === '1' ? '1' : '0';
                 deleteCookie(testCookieName);
+
+                // Update cookies disabled if we are unable to read/write test cookie
+                if (!hasCookiesResult) {
+                    hasCookiesResult = hasCookie;
+                }
+
                 return hasCookie;
             }
 
@@ -1787,8 +1801,21 @@ if (typeof window.Caliban !== 'object') {
                     Math.floor(configSessionTimeout / 1000) +
                     // '&cdid=' + makeCrossDomainDeviceId() +
                     (charSet ? '&cs=' + encodeWrapper(charSet) : '') +
+                    '&dnt=' +
+                    configDoNotTrack +
                     '&snew=' +
                     newSession;
+
+                var browserFeatures = detectBrowserFeatures();
+
+                configDebug && console.log('[CALIBAN_DEBUG] Browser Features: ', browserFeatures);
+
+                // browser features
+                for (var i in browserFeatures) {
+                    if (Object.prototype.hasOwnProperty.call(browserFeatures, i)) {
+                        request += '&' + i + '=' + browserFeatures[i];
+                    }
+                }
 
                 // update cookie
                 setSessionCookie(sessionReferenceId);
@@ -1853,7 +1880,8 @@ if (typeof window.Caliban !== 'object') {
                 var link = query.getAttributeValueFromNode(element, 'href');
 
                 // If link remains on the same domain AND user has cookies enabled then do not append session Id
-                if ((!link || startsUrlWithTrackerUrl(link)) && hasCookies()) {
+                if ((!link || startsUrlWithTrackerUrl(link)) && hasCookies() === '1') {
+                    configDebug && console.log('[CALIBAN_DEBUG] No cross-domain reference needed');
                     return;
                 }
 
@@ -1863,6 +1891,8 @@ if (typeof window.Caliban !== 'object') {
                 var crossDomainSessionId = loadSessionReferenceId() + '.' + makeCrossDomainDeviceId();
 
                 link = addUrlParameter(link, configSessionIdParam, crossDomainSessionId);
+
+                configDebug && console.log('[CALIBAN_DEBUG] Adding cross-domain reference #' + crossDomainSessionId);
 
                 element.setAttribute('href', link);
             }
@@ -2003,6 +2033,8 @@ if (typeof window.Caliban !== 'object') {
                     // if(isLinkToInternalDomain(sourceElement)) {
                     replaceHrefForCrossDomainLink(sourceElement);
                     // }
+
+                    configDebug && console.log('[CALIBAN_DEBUG] Click processed ' + sourceElement.href || null);
                 }
             }
 
