@@ -467,7 +467,7 @@ class Caliban extends Singleton {
 		// TODO: Parse inbound data to see if we can deduce Google/Bing/etc... when referrer is missing
 
 		// Create a debug record in the same storage container with a parallel key, but separate from the session data
-		if (CBN_DEBUG) {
+		if (CBN_DEBUG || CBN_DEBUG_CONTAINER) {
 			$this->debug_state = SessionObject::fromArray([
 				'_id' => $this->get_session_reference_id(),
 				'session_refrence_key' => self::SESSION_REFERENCE_KEY,
@@ -488,15 +488,15 @@ class Caliban extends Singleton {
 				'search_engine' =>  SearchEngine::get_instance()->extract_information_from_url($this->client_referrer),
 				'social_network' => SocialNetwork::get_instance()->extract_information_from_url($this->client_referrer),
 				'client_query_vars' => $this->get_client_query_vars(),
-				'cookies' => array_keys($_COOKIE),
+				'cookies' => array_keys($_COOKIE ?? []),
 				'servervars' => [
-					'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'],
-					'HTTP_X_REAL_IP' => $_SERVER['HTTP_X_REAL_IP'],
-					'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'],
-					'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'],
-					'HTTP_USER_AGENT' => $_SERVER['HTTP_USER_AGENT'],
-					'HTTP_REFERER' => $_SERVER['HTTP_REFERER'],
-					'REQUEST_URI' => $_SERVER['REQUEST_URI'],
+					'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? null,
+					'HTTP_X_REAL_IP' => $_SERVER['HTTP_X_REAL_IP'] ?? null,
+					'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
+					'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? null,
+					'HTTP_USER_AGENT' => $_SERVER['HTTP_USER_AGENT'] ?? null,
+					'HTTP_REFERER' => $_SERVER['HTTP_REFERER'] ?? null,
+					'REQUEST_URI' => $_SERVER['REQUEST_URI'] ?? null,
 				],
 			]);
 		}
