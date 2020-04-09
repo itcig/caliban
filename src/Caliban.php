@@ -467,7 +467,7 @@ class Caliban extends Singleton {
 		// TODO: Parse inbound data to see if we can deduce Google/Bing/etc... when referrer is missing
 
 		// Create a debug record in the same storage container with a parallel key, but separate from the session data
-		if (CBN_DEBUG) {
+		if (CBN_DEBUG || CBN_DEBUG_CONTAINER) {
 			$this->debug_state = SessionObject::fromArray([
 				'_id' => $this->get_session_reference_id(),
 				'session_refrence_key' => self::SESSION_REFERENCE_KEY,

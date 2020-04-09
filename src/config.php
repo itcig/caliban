@@ -23,6 +23,11 @@ if (!defined('CBN_DEBUG')) {
 	define('CBN_DEBUG', env('CBN_DEBUG') ?? false);
 }
 
+// Enable the debug session object as a separate cache_key without enabling full CBN_DEBUG
+if (!defined('CBN_DEBUG_CONTAINER')) {
+	define('CBN_DEBUG_CONTAINER', env('CBN_DEBUG_CONTAINER') ?? false);
+}
+
 /**
  * Cookie and tracking variable settings
  */
