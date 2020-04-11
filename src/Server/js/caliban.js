@@ -2265,6 +2265,7 @@ if (typeof window.Caliban !== 'object') {
                     ignorePattern = getClassesRegExp(configIgnoreClasses, 'ignore'),
                     formElements = documentAlias.forms,
                     formElement = null,
+                    formMethod = null,
                     trackerType = null;
 
                 configDebug && console.log('[CALIBAN_DEBUG] Forms found:', formElements ? query.htmlCollectionToArray(formElements) : null);
@@ -2276,7 +2277,9 @@ if (typeof window.Caliban !== 'object') {
                         configDebug &&
                             console.log('[CALIBAN_DEBUG] Checking eligibility of form `' + (formElement.id || formElement.name) + '`');
 
-                        if (!ignorePattern.test(formElement.className)) {
+                        formMethod = query.getAttributeValueFromNode(formElement, 'method') || '';
+
+                        if (!ignorePattern.test(formElement.className) && formMethod.toUpperCase() === 'POST') {
                             trackerType = typeof formElement.calibanTrackers;
 
                             configDebug &&
