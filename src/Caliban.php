@@ -464,8 +464,6 @@ class Caliban extends Singleton {
 		// Get passed params which are not designated for other purposes nor suppressed from tracker
 		$this->set_last_attribution_params();
 
-		// TODO: Parse inbound data to see if we can deduce Google/Bing/etc... when referrer is missing
-
 		// Create a debug record in the same storage container with a parallel key, but separate from the session data
 		if (CBN_DEBUG || CBN_DEBUG_CONTAINER) {
 			$this->debug_state = SessionObject::fromArray([
@@ -488,6 +486,7 @@ class Caliban extends Singleton {
 				'search_engine' =>  SearchEngine::get_instance()->extract_information_from_url($this->client_referrer),
 				'social_network' => SocialNetwork::get_instance()->extract_information_from_url($this->client_referrer),
 				'client_query_vars' => $this->get_client_query_vars(),
+				'cookie_size' => strlen($_SERVER['HTTP_COOKIE'] ?? ''),
 				'cookies' => array_keys($_COOKIE ?? []),
 				'servervars' => [
 					'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? null,
