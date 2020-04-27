@@ -1,6 +1,6 @@
 {
 	"name": "caliban",
-	"version": "1.1.9",
+	"version": "1.1.10",
 	"description": "Caliban session tracker",
 	"repository": {
 		"type": "git",
