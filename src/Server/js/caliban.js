@@ -1880,7 +1880,7 @@ if (typeof window.Caliban !== 'object') {
                 var link = query.getAttributeValueFromNode(element, 'href');
 
                 // If link remains on the same domain AND user has cookies enabled then do not append session Id
-                if ((!link || startsUrlWithTrackerUrl(link)) && hasCookies() === '1') {
+                if (!link || (startsUrlWithTrackerUrl(link) && hasCookies() === '1') || link.indexOf('#') === 0) {
                     configDebug && console.log('[CALIBAN_DEBUG] No cross-domain reference needed');
                     return;
                 }
@@ -1909,6 +1909,12 @@ if (typeof window.Caliban !== 'object') {
                 }
 
                 var link = query.getAttributeValueFromNode(element, 'href');
+
+                // Return if link is empty or a named anchor
+                if (!link || link.indexOf('#') === 0) {
+                    configDebug && console.log('[CALIBAN_DEBUG] Not processing link append for: ' + link);
+                    return;
+                }
 
                 configDebug && console.log('[CALIBAN_DEBUG] Link append href (before): ' + link);
 
@@ -2020,10 +2026,10 @@ if (typeof window.Caliban !== 'object') {
              * Process clicks
              */
             function processClick(sourceElement) {
-                configDebug && console.log('Handle click: ' + sourceElement.href || null);
-
                 // in case the clicked element is within the <a> (for example there is a <div> within the <a>) this will get the actual <a> link element
                 sourceElement = getSourceElement(sourceElement);
+
+                configDebug && console.log('Handle click: ' + sourceElement.href || null);
 
                 // Set any append params to all link clicks
                 addLinkAppendParams(sourceElement);
