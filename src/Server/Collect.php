@@ -4,8 +4,6 @@ namespace Caliban\Server;
 
 use Caliban\Abstracts\Singleton;
 
-require_once(__DIR__ . '/../config.php');
-
 class Collect extends Singleton {
 
 	/**
@@ -38,7 +36,6 @@ class Collect extends Singleton {
 
 	public function init() {
 		try {
-
 			$this->tracker = \Caliban\Caliban::get_instance();
 
 			$parsed_data = $this->parse_data();

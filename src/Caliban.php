@@ -19,13 +19,7 @@ use \Caliban\Lib\SocialNetwork;
 use \Caliban\Client\Client;
 use \Caliban\Server\Server;
 
-require_once(__DIR__ . '/config.php');
-
 class Caliban extends Singleton {
-
-	const SESSION_REFERENCE_KEY = CBN_SESSION_REFERENCE_KEY;
-
-	const DEFAULT_CACHE_KEY = CBN_DEFAULT_CACHE_KEY;
 
 	// These have special uses and cannot be modified by any config
 	const STATIC_USE_PARAMS = [
@@ -43,6 +37,8 @@ class Caliban extends Singleton {
 		'gclid', // AdWords auto-tagging
 		'msclkid' // Bing auto-tagging
 	];
+
+	private $session_reference_key;
 
 	private $client_uri;
 
@@ -103,6 +99,10 @@ class Caliban extends Singleton {
 	 * Caliban constructor
 	 */
 	public function __construct($session_reference_id = null) {
+
+		// Load config only when instantiating to allow for end-applications to pre-set global constants
+		require_once(__DIR__ . '/config.php');
+
 		// Load defaults for any properties not explicitly set
 		$this->set_defaults();
 
@@ -305,6 +305,11 @@ class Caliban extends Singleton {
 		// Assume new session unless determined otherwise
 		$this->is_new_session = false;
 
+		// Key used for passing session Id
+		if (empty($this->session_reference_key)) {
+			$this->session_reference_key = defined('CBN_SESSION_REFERENCE_KEY') ? CBN_SESSION_REFERENCE_KEY : "_cbnsid";
+		}
+		
 		// Requesting URL
 		if (empty($this->client_uri)) {
 			$this->client_uri = $_SERVER['REQUEST_URI'] ?? "";
@@ -353,8 +358,9 @@ class Caliban extends Singleton {
 			$this->client_user_agent = \Cig\get_user_agent();
 		}
 
+		// Prefix of the cache object key
 		if (empty($this->cache_key)) {
-			$this->cache_key = self::DEFAULT_CACHE_KEY;
+			$this->cache_key = defined('CBN_DEFAULT_CACHE_KEY') ? CBN_DEFAULT_CACHE_KEY : "cbn";
 		}
 
 		// Fallback to ENV if set, otherwise null and session data never expires
@@ -468,16 +474,16 @@ class Caliban extends Singleton {
 		if (CBN_DEBUG || CBN_DEBUG_CONTAINER) {
 			$this->debug_state = SessionObject::fromArray([
 				'_id' => $this->get_session_reference_id(),
-				'session_refrence_key' => self::SESSION_REFERENCE_KEY,
-				'cookied_session_id' => $this->get_client_cookie_value(self::SESSION_REFERENCE_KEY),
+				'session_reference_key' => $this->session_reference_key,
+				'cookied_session_id' => $this->get_client_cookie_value($this->session_reference_key),
 				'uri' => $this->client_uri,
 				'referrer' => $this->client_referrer,
 				'is_session_landing_page' => $this->is_session_landing_page(),
 				'is_new_session' => $this->is_new_session,
 				'is_campaign_start' => $this->is_campaign_start(),
-				'new_session_test_url' => empty($this->get_client_querystring_value(self::SESSION_REFERENCE_KEY)),
-				'new_session_test_has_session_cookie' => empty($this->get_client_cookie_value(self::SESSION_REFERENCE_KEY)),
-				'new_session_test_no_cookie_or_not_new_session' => (empty($this->get_client_cookie_value(self::SESSION_REFERENCE_KEY)) || $this->is_new_session),
+				'new_session_test_url' => empty($this->get_client_querystring_value($this->session_reference_key)),
+				'new_session_test_has_session_cookie' => empty($this->get_client_cookie_value($this->session_reference_key)),
+				'new_session_test_no_cookie_or_not_new_session' => (empty($this->get_client_cookie_value($this->session_reference_key)) || $this->is_new_session),
 				'ignore_params' => $this->ignore_params,
 				'append_params' => $this->append_params,
 				'first_attribution_params' => $this->first_attribution_params,
@@ -683,18 +689,18 @@ class Caliban extends Singleton {
 		// Store session reference Id in a cookie regardless so we can recall this session if the client closes their browsers and returns prior to cache expiration
 		// TODO: When upgrading min version to PHP 7.3 then we can use PHP setcookie() samesite flag
 		if (version_compare(phpversion(), '7.3.0') >= 0) {
-			setcookie(self::SESSION_REFERENCE_KEY, $this->get_session_reference_id(), [
+			setcookie($this->session_reference_key, $this->get_session_reference_id(), [
 				'expires' => time() + $this->cache_expiration_seconds,
 				'path' => "/",
 				'secure' => true,
 				'samesite' => 'None',
 			]);
 		} else {
-			header(sprintf("Set-Cookie: %s=%s; Expires=%s; Path=/; SameSite=None; Secure", self::SESSION_REFERENCE_KEY, $this->get_session_reference_id(), date("D, d M Y H:i:s", time() + $this->cache_expiration_seconds) . 'GMT'));
+			header(sprintf("Set-Cookie: %s=%s; Expires=%s; Path=/; SameSite=None; Secure", $this->session_reference_key, $this->get_session_reference_id(), date("D, d M Y H:i:s", time() + $this->cache_expiration_seconds) . 'GMT'));
 		}
 
 		// Make cookie available for this request
-		$_COOKIE[self::SESSION_REFERENCE_KEY] = $this->get_session_reference_id();
+		$_COOKIE[$this->session_reference_key] = $this->get_session_reference_id();
 
 		// Try to save in storage DB
 		if ($this->storage_db->save($this->get_session_reference_id(), $key, $data)) {
@@ -717,7 +723,7 @@ class Caliban extends Singleton {
 		}
 
 		// Attempt to retrieve existing cigsession reference Id
-		$session_reference_id = $this->get_client_value(self::SESSION_REFERENCE_KEY);
+		$session_reference_id = $this->get_client_value($this->session_reference_key);
 
 		// Set session Id, which will build unique session identifier if not found
 		$this->set_session_reference_id($session_reference_id);
@@ -733,14 +739,14 @@ class Caliban extends Singleton {
 	private function is_session_landing_page() {
 
 		// To consider this the start of a new session:
-		// 1. The SESSION_REFERENCE_KEY was not passed in URL meaning we came from a session started on another domain
+		// 1. The `session_reference_key` was not passed in URL meaning we came from a session started on another domain
 		// 2. We do not have a session reference Id stored in a cookie AND not explictly marked as `new` which would indicate a client session was initiated or a campaign start param was received.
-		return empty($this->get_client_querystring_value(self::SESSION_REFERENCE_KEY)) &&
-		       (empty($this->get_client_cookie_value(self::SESSION_REFERENCE_KEY)) ||
+		return empty($this->get_client_querystring_value($this->session_reference_key)) &&
+		       (empty($this->get_client_cookie_value($this->session_reference_key)) ||
 		        $this->is_new_session);
 
 		// Previously was checking for referrer different from URI
-		// return empty($this->get_client_querystring_value(self::SESSION_REFERENCE_KEY)) && $this->is_outside_referrer();
+		// return empty($this->get_client_querystring_value($this->session_reference_key)) && $this->is_outside_referrer();
 	}
 
 	/**
