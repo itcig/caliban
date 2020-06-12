@@ -4,8 +4,6 @@ namespace Caliban\Server;
 
 use Caliban\Abstracts\Singleton;
 
-require_once(__DIR__ . '/../config.php');
-
 class Server extends Singleton {
 
 	private $request_path;
@@ -19,6 +17,9 @@ class Server extends Singleton {
 	}
 
 	public function run() {
+
+		// Load config after Server is run to allow for end-applications to pre-set global constants
+		require_once(__DIR__ . '/../config.php');
 
 		if ($parsed = json_decode(\Cig\is_json(file_get_contents("php://input")) ?? null, true)) {
 			$this->data = $parsed;
