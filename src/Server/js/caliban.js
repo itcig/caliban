@@ -2662,6 +2662,8 @@ if (typeof window.Caliban !== 'object') {
              */
             this.setSessionData = function(_sessionData) {
                 sessionData = _sessionData;
+
+                Caliban.trigger('sessionSet', [this]);
             };
 
             /**
@@ -3011,6 +3013,39 @@ if (typeof window.Caliban !== 'object') {
 
         Caliban = {
             initialized: false,
+
+            /**
+             * Listen to an event and invoke the handler when a the event is triggered.
+             *
+             * @param string event
+             * @param function handler
+             */
+            on: function(event, handler) {
+                if (!eventHandlers[event]) {
+                    eventHandlers[event] = [];
+                }
+
+                eventHandlers[event].push(handler);
+            },
+
+            /**
+             * Remove a handler to no longer listen to the event. Must pass the same handler that was used when
+             * attaching the event via ".on".
+             * @param string event
+             * @param function handler
+             */
+            off: function(event, handler) {
+                if (!eventHandlers[event]) {
+                    return;
+                }
+
+                var i = 0;
+                for (i; i < eventHandlers[event].length; i++) {
+                    if (eventHandlers[event][i] === handler) {
+                        eventHandlers[event].splice(i, 1);
+                    }
+                }
+            },
 
             /**
              * Triggers the given event and passes the parameters to all handlers.
