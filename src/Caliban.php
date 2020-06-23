@@ -631,7 +631,7 @@ class Caliban extends Singleton {
 		$this->save_session($this->cache_key, $this->state);
 
 		// Store debug session
-		if (CBN_DEBUG) {
+		if (CBN_DEBUG || CBN_DEBUG_CONTAINER) {
 			$this->save_session("__debug__" . $this->cache_key, $this->debug_state);
 		}
 
