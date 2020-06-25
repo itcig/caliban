@@ -1611,7 +1611,7 @@ if (typeof window.Caliban !== 'object') {
                 var crossDomainSessionIdParts = crossDomainSessionId.split('.');
 
                 var sessionId = crossDomainSessionIdParts[0],
-                    deviceId = crossDomainSessionIdParts[1];
+                    deviceId = crossDomainSessionIdParts.length > 1 ? crossDomainSessionIdParts[1] : null;
 
                 configDebug && console.log('[CALIBAN_DEBUG] Get session Id from URL: ' + sessionId);
 
@@ -1621,7 +1621,7 @@ if (typeof window.Caliban !== 'object') {
 
                 configDebug && console.log('[CALIBAN_DEBUG] Get device Id from URL: ' + deviceId);
 
-                if (isSameCrossDomainDevice(deviceId)) {
+                if (!deviceId || (deviceId && isSameCrossDomainDevice(deviceId))) {
                     return String(sessionId);
                 }
 
@@ -1648,8 +1648,8 @@ if (typeof window.Caliban !== 'object') {
                         var isNewCampaign = isCampaignStart(),
                             cookiedSessionReferenceId = getCookie(configSessionIdParam);
 
-                        prevSessionReferenceId = isNewCampaign && cookiedSessionReferenceId;
-                        sessionReferenceId = !isNewCampaign && cookiedSessionReferenceId;
+                        prevSessionReferenceId = isNewCampaign ? cookiedSessionReferenceId : null;
+                        sessionReferenceId = !isNewCampaign ? cookiedSessionReferenceId : null;
                     }
 
                     // NOTE: We were using this logic, but what if referrer is blocked and we're mid-funnel. The cookied session would be ignored.
