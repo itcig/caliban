@@ -94,8 +94,14 @@ class Collect extends Singleton {
 
 			// Allow for any misc data properties to be set
 			if (!empty($parsed_data['cdata']) && \Cig\is_json($parsed_data['cdata'])) {
-				foreach(json_decode($parsed_data['cdata'], true) as $queued_prop => $queued_value) {
-					$this->tracker->{$queued_prop} = $queued_value;
+				// Decode JSON
+				$extra_data = json_decode($parsed_data['cdata'], true);
+
+				// Add all keys to tracker
+				if (is_array($extra_data)) {
+					foreach ($extra_data as $queued_prop => $queued_value) {
+						$this->tracker->{$queued_prop} = $queued_value;
+					}
 				}
 			}
 
