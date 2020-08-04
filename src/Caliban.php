@@ -50,6 +50,8 @@ class Caliban extends Singleton {
 
 	private $property_id;
 
+	private $user_id;
+
 	private $append_params;
 
 	private $ignore_params;
@@ -86,6 +88,11 @@ class Caliban extends Singleton {
 	private $prev_state;
 
 	/**
+	 * @var SessionObject Data to queue before tracker is ready
+	 */
+	private $queued_state;
+
+	/**
 	 * @var SessionObject The current session data
 	 */
 	private $debug_state;
@@ -111,6 +118,29 @@ class Caliban extends Singleton {
 
 			$this->state = $this->load_session();
 		}
+	}
+
+	/**
+	 * Set or update overloaded properties
+	 *
+	 * @param string $name Property name
+	 * @param mixed|null $val Property value
+	 */
+	public function __set(string $name, $val = null) : void {
+
+		// Do not set null values
+		if (is_null($val)) {
+			return;
+		}
+
+		// Modify state property or if state has not been set up then queue data to add later
+		if (!empty($this->state)) {
+			$this->state->{$name} = $val;
+		} else {
+			$this->queued_state->{$name} = $val;
+		}
+
+		return;
 	}
 
 	/**
@@ -166,6 +196,17 @@ class Caliban extends Singleton {
 	 */
 	public function set_user_agent ($user_agent): Caliban {
 		$this->client_user_agent = $user_agent;
+
+		return $this;
+	}
+
+	/**
+	 * @param string $user_id Set a unique user Id to be sent to analytics tools and other
+	 *
+	 * @return \Caliban\Caliban This class instance
+	 */
+	public function set_user_id(string $user_id): Caliban {
+		$this->user_id = $user_id;
 
 		return $this;
 	}
@@ -369,6 +410,8 @@ class Caliban extends Singleton {
 
 			// TODO: Log warning if setting non-expiring cache. This should be allowed but only if well thought out and not by mistake
 		}
+
+		$this->queued_state = SessionObject::instance();
 	}
 
 	// Add remaining "first attribution" items including "campaign start" params, but excludding static ones which are dealt with separately
@@ -591,7 +634,16 @@ class Caliban extends Singleton {
 
 		//**************************************************************************
 		//******* LAST INSTANCE: The following items mutate on every request *******
+		//******* `NULL` values do not overwrite properties, only empty ones *******
 		//**************************************************************************
+
+		// Overwrite GA user Id with known user if passed, otherwise leave alone to use anonymous generated Id from session start
+		if (!empty($this->user_id)) {
+			$session_state->gauid = $this->user_id;
+		}
+
+		// Set user Id
+		$session_state->user_id = $this->user_id;
 
 		// Set IP address on every request
 		$session_state->ip = $this->client_ip;
@@ -611,6 +663,11 @@ class Caliban extends Singleton {
 		// Loop through last attribution keys and add/update
 		foreach ($this->last_attribution_params as $last_attribution_param) {
 			$session_state->{$last_attribution_param} = $this->get_client_value($last_attribution_param);
+		}
+
+		// Load queued properties if they exist
+		foreach ($this->queued_state->toArray() as $queued_property => $queued_value) {
+			$session_state->{$queued_property} = $queued_value;
 		}
 
 		// Set state
