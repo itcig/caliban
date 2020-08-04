@@ -24,6 +24,11 @@ class SessionObject implements ContainerInterface {
 		$this->default_output_type = new JsonStringOutput;
 	}
 
+	public static function instance() {
+		$instance = new self();
+		return $instance;
+	}
+
 	public static function fromString(string $data = null) {
 		$instance = new self();
 		$instance->loadByString($data);
@@ -31,7 +36,7 @@ class SessionObject implements ContainerInterface {
 	}
 
 	public static function fromArray(array $data) {
-		return self::fromString(json_encode($data, JSON_NUMERIC_CHECK));
+		return self::fromString(\Cig\json_encode_numeric($data));
 	}
 
 	public static function fromObject(SessionObject $obj) {
