@@ -1042,6 +1042,8 @@ if (typeof window.Caliban !== 'object') {
                 configTrackerUrl = trackerUrl || '',
                 // Site ID
                 configTrackerPropertyId = propertyId || '',
+                // User ID
+                configUserId = configUserId || '',
                 // Session UUID
                 sessionReferenceId = '',
                 // Session UUID stored on client that is being overwritten
@@ -1068,6 +1070,8 @@ if (typeof window.Caliban !== 'object') {
                 configFirstAttributionParams = ['gauid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'],
                 // Params to check for which indicate this is the beginning of a new campaign/session
                 configCampaignStartParams = ['utm_campaign', 'gclid', 'msclkid'],
+                // Additional key/value pairs that will be stored with sess
+                sessionExtraData = {},
                 // Will add all form field input names as an array under a parent key
                 // i.e. <input type="hidden" name="mynamespace[param_1]" /> instead of <input type="hidden" name="param_1" />
                 configFormInputNamespace,
@@ -1786,6 +1790,8 @@ if (typeof window.Caliban !== 'object') {
                     String(Math.random()).slice(2, 8) + // keep the string to a minimum
                     '&ts=' +
                     getCurrentTimestampInSeconds() +
+                    '&uid=' +
+                    configUserId +
                     '&url=' +
                     encodeWrapper(purify(currentUrl)) +
                     (configReferrerUrl.length ? '&urlref=' + encodeWrapper(purify(configReferrerUrl)) : '') +
@@ -1797,6 +1803,7 @@ if (typeof window.Caliban !== 'object') {
                     (configCampaignStartParams && configCampaignStartParams.length
                         ? '&cmpst=' + encodeWrapper(configCampaignStartParams)
                         : '') +
+                    (!isObjectEmpty(sessionExtraData) ? '&cdata=' + encodeWrapper(JSON.stringify(sessionExtraData)) : '') +
                     '&ces=' +
                     Math.floor(configSessionTimeout / 1000) +
                     // '&cdid=' + makeCrossDomainDeviceId() +
@@ -2383,6 +2390,24 @@ if (typeof window.Caliban !== 'object') {
             };
 
             /**
+             * Returns the user ID
+             *
+             * @returns string
+             */
+            this.getUserId = function() {
+                return configUserId;
+            };
+
+            /**
+             * Specify the user ID
+             *
+             * @param string userId
+             */
+            this.setUserId = function(userId) {
+                configUserId = userId;
+            };
+
+            /**
              * Returns the query string for the current HTTP Tracking API request.
              * Caliban would prepend the hostname and path to Caliban: http://example.org/caliban/caliban.php?
              * prior to sending the request.
@@ -2535,7 +2560,7 @@ if (typeof window.Caliban !== 'object') {
             /**
              * Return the current referrer
              */
-            this.getReferrerUrl = function(url) {
+            this.getReferrerUrl = function() {
                 return configReferrerUrl;
             };
 
@@ -2671,6 +2696,22 @@ if (typeof window.Caliban !== 'object') {
              */
             this.getSessionData = function() {
                 return sessionData;
+            };
+
+            /**
+             * Set additional data key/value pairs
+             *
+             * @param object data
+             */
+            this.setSessionExtraData = function(data) {
+                sessionExtraData = data;
+            };
+
+            /**
+             * Return the current extra data object
+             */
+            this.getSessionExtraData = function() {
+                return sessionExtraData;
             };
 
             /**
@@ -2999,7 +3040,9 @@ if (typeof window.Caliban !== 'object') {
             'setCookieDomain',
             'setDomains',
             'setPropertyId',
+            'setUserId',
             'setSessionIdParam',
+            'setSessionExtraData',
             'setIgnoreParams',
             'setAppendParams',
             'setIgnoreClasses',

@@ -87,6 +87,19 @@ class Collect extends Singleton {
 				$this->tracker->set_new_session(filter_var($parsed_data['snew'], FILTER_VALIDATE_BOOLEAN));
 			}
 
+			// Set user Id if passed. There is no way to send a null/empty user Id as that shoul instead be a new session
+			if (!empty($parsed_data['uid'])) {
+				$this->tracker->set_user_id($parsed_data['uid']);
+			}
+
+			// Allow for any misc data properties to be set
+			if (!empty($parsed_data['cdata']) && \Cig\is_json($parsed_data['cdata'])) {
+				foreach(json_decode($parsed_data['cdata'], true) as $queued_prop => $queued_value) {
+					$this->tracker->{$queued_prop} = $queued_value;
+				}
+			}
+
+			// Save session
 			$this->tracker->init()
 			        ->save();
 
