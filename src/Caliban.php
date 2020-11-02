@@ -44,6 +44,8 @@ class Caliban extends Singleton {
 
 	private $client_referrer;
 
+	private $client_params;
+
 	private $client_ip;
 
 	private $client_user_agent;
