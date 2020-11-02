@@ -1652,8 +1652,8 @@ if (typeof window.Caliban !== 'object') {
                         var isNewCampaign = isCampaignStart(),
                             cookiedSessionReferenceId = getCookie(configSessionIdParam);
 
-                        prevSessionReferenceId = isNewCampaign ? cookiedSessionReferenceId : null;
-                        sessionReferenceId = !isNewCampaign ? cookiedSessionReferenceId : null;
+                        prevSessionReferenceId = isNewCampaign ? cookiedSessionReferenceId : '';
+                        sessionReferenceId = !isNewCampaign ? cookiedSessionReferenceId : '';
                     }
 
                     // NOTE: We were using this logic, but what if referrer is blocked and we're mid-funnel. The cookied session would be ignored.
@@ -1785,7 +1785,9 @@ if (typeof window.Caliban !== 'object') {
                     'sid=' +
                     configTrackerPropertyId +
                     ('&' + configSessionIdParam + '=' + sessionReferenceId) +
-                    (prevSessionReferenceId.length ? '&link_' + configSessionIdParam + '=' + prevSessionReferenceId : '') +
+                    (prevSessionReferenceId && prevSessionReferenceId.length
+                        ? '&link_' + configSessionIdParam + '=' + prevSessionReferenceId
+                        : '') +
                     '&r=' +
                     String(Math.random()).slice(2, 8) + // keep the string to a minimum
                     '&ts=' +
