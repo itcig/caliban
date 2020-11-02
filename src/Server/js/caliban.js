@@ -1785,7 +1785,7 @@ if (typeof window.Caliban !== 'object') {
                     'sid=' +
                     configTrackerPropertyId +
                     ('&' + configSessionIdParam + '=' + sessionReferenceId) +
-                    ('&link_' + configSessionIdParam + '=' + prevSessionReferenceId) +
+                    (prevSessionReferenceId.length ? '&link_' + configSessionIdParam + '=' + prevSessionReferenceId : '') +
                     '&r=' +
                     String(Math.random()).slice(2, 8) + // keep the string to a minimum
                     '&ts=' +
