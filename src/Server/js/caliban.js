@@ -3071,6 +3071,14 @@ if (typeof window.Caliban !== 'object') {
                 }
 
                 eventHandlers[event].push(handler);
+
+                // If ready handler already fired and established session, fire event again to handle out-of-order loading
+                if (event === 'sessionSet') {
+                    var _tracker = this.getAsyncTracker();
+                    if (_tracker.getSessionData()) {
+                        Caliban.trigger(event, [_tracker]);
+                    }
+                }
             },
 
             /**
