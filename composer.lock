@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9ebd9f3b1922735469fa6bd125d5b3ed",
+    "content-hash": "2d1852991b4b2e6a18485dcee0c3b970",
     "packages": [
         {
             "name": "itcig/php-helpers",
@@ -43,6 +43,10 @@
                 }
             ],
             "description": "PHP helper methods",
+            "support": {
+                "issues": "https://github.com/itcig/php-helpers/issues",
+                "source": "https://github.com/itcig/php-helpers/tree/v1.0.10"
+            },
             "time": "2020-08-04T03:59:26+00:00"
         },
         {
@@ -136,6 +140,11 @@
             "keywords": [
                 "env"
             ],
+            "support": {
+                "email": "oom@oscarotero.com",
+                "issues": "https://github.com/oscarotero/env/issues",
+                "source": "https://github.com/oscarotero/env/tree/v1.2.0"
+            },
             "time": "2019-04-03T18:28:43+00:00"
         },
         {
@@ -191,6 +200,10 @@
                 "php",
                 "type"
             ],
+            "support": {
+                "issues": "https://github.com/schmittjoh/php-option/issues",
+                "source": "https://github.com/schmittjoh/php-option/tree/1.7.5"
+            },
             "funding": [
                 {
                     "url": "https://github.com/GrahamCampbell",
@@ -208,12 +221,12 @@
             "version": "v1.1.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/nrk/predis.git",
+                "url": "https://github.com/predis/predis.git",
                 "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nrk/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
+                "url": "https://api.github.com/repos/predis/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
                 "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1",
                 "shasum": ""
             },
@@ -251,6 +264,20 @@
                 "predis",
                 "redis"
             ],
+            "support": {
+                "issues": "https://github.com/nrk/predis/issues",
+                "source": "https://github.com/predis/predis/tree/v1.1.1"
+            },
+            "funding": [
+                {
+                    "url": "https://www.paypal.me/tillkruss",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/tillkruss",
+                    "type": "github"
+                }
+            ],
             "time": "2016-06-16T16:22:20+00:00"
         },
         {
@@ -284,12 +311,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Ctype\\": ""
-                },
                 "files": [
                     "bootstrap.php"
-                ]
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Ctype\\": ""
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -313,6 +340,9 @@
                 "polyfill",
                 "portable"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.18.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -391,6 +421,10 @@
                 "env",
                 "environment"
             ],
+            "support": {
+                "issues": "https://github.com/vlucas/phpdotenv/issues",
+                "source": "https://github.com/vlucas/phpdotenv/tree/4.1"
+            },
             "funding": [
                 {
                     "url": "https://github.com/GrahamCampbell",
@@ -414,5 +448,5 @@
         "php": "^7.1"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.2.0"
 }
