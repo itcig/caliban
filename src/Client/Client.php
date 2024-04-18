@@ -29,43 +29,81 @@ class Client extends Singleton {
 		return $this;
 	}
 
-	public function load_tracker(): void {
-		$file = '/js/client.js';
+	public function load_tracker(): void
+    {
+        $file = '/js/client.js';
 
-		// Open tracker script tag
-		print "<script type=\"text/javascript\">\n";
+        // Open tracker script tag
+        print "<script type=\"text/javascript\">\n";
 
-		print "var _cbn = window._cbn || [];\n";
+        print "var _cbn = window._cbn || [];\n";
 
-		foreach ($this->data as $event_name => $event_params) {
+        foreach ($this->data as $event_name => $event_params) {
 
-			// Open option line
-			$option_to_add = "_cbn.push(['{$event_name}'";
+            // Open option line
+            $option_to_add = "_cbn.push(['{$event_name}'";
 
-			// Conditionally add event arguments if set
-			if (!is_null($event_params)) {
-				$option_to_add .= ",";
+            // Conditionally add event arguments if set
+            if (!is_null($event_params)) {
+                $option_to_add .= ",";
 
-				if (is_numeric($event_params)) {
-					$option_to_add .= $event_params;
-				} else if (is_string($event_params)) {
-					$option_to_add .= "'" . $event_params . "'";
-				} else {
-					$option_to_add .= json_encode($event_params, true);
-				}
-			}
+                if (is_numeric($event_params)) {
+                    $option_to_add .= $event_params;
+                } else if (is_string($event_params)) {
+                    $option_to_add .= "'" . $event_params . "'";
+                } else {
+                    $option_to_add .= json_encode($event_params, true);
+                }
+            }
 
-			// Close option line
-			$option_to_add .= "]);\n";
+            // Close option line
+            $option_to_add .= "]);\n";
 
-			// Output option
-			print $option_to_add;
-		}
+            // Output option
+            print $option_to_add;
+        }
 
-		readfile(dirname(__FILE__) . $file);
+        readfile(dirname(__FILE__) . $file);
 
-		// Close tracker script tag
-		print "\n</script>\n";
-	}
+        // Close tracker script tag
+        print "\n</script>\n";
+    }
+    /**
+     * Similar to load_tracker but just returns the plain js without tags for more flexibility.
+     */
+    public function get_tracker_js(): string {
+        $file = '/js/client.js';
+
+        $tracker_js = "var _cbn = window._cbn || [];\n";
+
+        foreach ($this->data as $event_name => $event_params) {
+
+            // Open option line
+            $option_to_add = "_cbn.push(['{$event_name}'";
+
+            // Conditionally add event arguments if set
+            if (!is_null($event_params)) {
+                $option_to_add .= ",";
+
+                if (is_numeric($event_params)) {
+                    $option_to_add .= $event_params;
+                } else if (is_string($event_params)) {
+                    $option_to_add .= "'" . $event_params . "'";
+                } else {
+                    $option_to_add .= json_encode($event_params, true);
+                }
+            }
+
+            // Close option line
+            $option_to_add .= "]);\n";
+
+            // Output option
+            $tracker_js .= $option_to_add;
+        }
+
+        $tracker_js .= file_get_contents(dirname(__FILE__) . $file);
+
+        return $tracker_js;
+    }
 }
 
