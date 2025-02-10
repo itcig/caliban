@@ -16,7 +16,7 @@
 	"minimum-stability": "dev",
 	"prefer-stable": true,
     "require": {
-	    "php": "^7.1",
+	    "php": "^7.1|^8.1",
 	    "itcig/php-helpers": "^1.0",
         "predis/predis": "^1.1",
 	    "oscarotero/env": "^1.1",
